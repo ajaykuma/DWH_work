@@ -1,0 +1,13 @@
+example of the Hub_Category 
+Create Table Hub_Category (
+
+CategoryID int NOT NULL,
+CategoryName nvarchar(15) NOT NULL,
+LOAD_DATE DateTime Not Null,
+RECORD_SOURCE nvarchar(12) not null,
+Primary Key (CategoryID)
+)
+
+Create unique index hub_category_i1
+
+on Hub_Category (CategoryName)
