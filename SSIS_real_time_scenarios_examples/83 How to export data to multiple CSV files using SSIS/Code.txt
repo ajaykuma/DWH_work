@@ -1,0 +1,6 @@
+execute sql task: "select FileName from Mydata where FileId >= "+ (DT_WSTR,20)  @[User::Id] +" "
+
+SQLQuery: "select Filecontent from mydata where FileName = '"+ @[User::FileName] +"' "
+
+Flat file connection string: "D:\\Files\\"+ @[User::FileName] +".txt"
+

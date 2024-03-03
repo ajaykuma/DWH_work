@@ -1,0 +1,12 @@
+SELECT [Email_Id]
+      ,[first_name]
+      ,[last_name]
+      ,[email]
+      ,[Address]
+      ,[City]
+      ,[State]
+      ,[Zip]
+      ,[SSN]
+      ,[Birthdate]
+	  ,Email_Id%2 Reminder
+  FROM [Work].[dbo].[Email]

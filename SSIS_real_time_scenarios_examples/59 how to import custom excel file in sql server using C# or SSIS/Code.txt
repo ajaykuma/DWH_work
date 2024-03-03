@@ -1,0 +1,76 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Load_Excel_file_till_a_particular_line
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            InsertExcelRecords();
+        }
+
+        public static void InsertExcelRecords()
+        {
+
+            try
+            {
+                string _path = @"D:\Files\Names.xlsx";
+                string constr = string.Format(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Extended Properties=""Excel 12.0 Xml;HDR=YES;""", _path);
+                OleDbConnection Econ = new OleDbConnection(constr);
+                string Query = string.Format("Select [Name],[DOB],[Age] FROM [{0}]", "Sheet1$");
+                Econ.Open();
+
+                DataSet ds = new DataSet();
+                OleDbDataAdapter oda = new OleDbDataAdapter(Query, Econ);
+                Econ.Close();
+                oda.Fill(ds);
+                DataTable Exceldt = ds.Tables[0];
+
+                for (int i = Exceldt.Rows.Count - 1; i >= 0; i--)
+                {
+                    string sr = "";
+                    int ln = Exceldt.Rows[i]["Name"].ToString().Length;
+                    string value = Exceldt.Rows[i]["Name"].ToString();
+                    if (ln >= 4)
+                    {
+                        sr = Exceldt.Rows[i]["Name"].ToString().Substring(0, 4);
+                    }
+
+                    if (Exceldt.Rows[i]["Name"] == DBNull.Value || Exceldt.Rows[i]["Name"] == "" || sr == "This" )
+                    {
+                        Exceldt.Rows[i].Delete();
+                    }
+                }
+                Exceldt.AcceptChanges();
+
+                SqlConnection sqlConnection = new SqlConnection();
+                sqlConnection.ConnectionString = @"server = DESKTOP-EKJ1P64\SQL2019; database = Work; Integrated Security=SSPI;"; //Connection Details
+                //creating object of SqlBulkCopy
+                SqlBulkCopy objbulk = new SqlBulkCopy(sqlConnection);
+                //assigning Destination table name
+                objbulk.DestinationTableName = "Student";
+                //Mapping Table column
+                objbulk.ColumnMappings.Add("Name", "Name");
+                objbulk.ColumnMappings.Add("DOB", "DOB");
+                objbulk.ColumnMappings.Add("Age", "Age");
+
+                //inserting Datatable Records to DataBase
+              
+                sqlConnection.Open();
+                objbulk.WriteToServer(Exceldt);
+                sqlConnection.Close();
+
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+public void Main()
+		{
+            // TODO: Add your code here
+
+            try
+            {
+
+                int a = 10;
+
+                string b = Dts.Variables["aa"].Value.ToString();
+
+                Dts.TaskResult = (int)ScriptResults.Success;
+            }
+
+            catch (Exception ex)
+            {
+
+               System.IO.File.AppendAllText(@"D:\Files\error_file.txt", "Package: How to log error in ssis script task Time:" + DateTime.Now.ToString() + " Error Message:" + ex.Message + Environment.NewLine);
+                Dts.TaskResult = (int)ScriptResults.Failure;
+            }
+
+        }

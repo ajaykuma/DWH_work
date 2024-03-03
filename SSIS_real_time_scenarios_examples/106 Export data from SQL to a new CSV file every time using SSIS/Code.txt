@@ -1,0 +1,55 @@
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+
+public void Main()
+		{
+            // TODO: Add your code here User::FileName,User::FolderPath,User::LogFolder, FullFilePath
+
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = Dts.Variables["LogFolder"].Value.ToString();
+            string FolderPath = Dts.Variables["FolderPath"].Value.ToString();
+            string FileName = Dts.Variables["FileName"].Value.ToString(); 
+            string FullFilePath = "";
+
+            try
+            {
+                DirectoryInfo d = new DirectoryInfo(FolderPath);
+                bool IsFileExists = false;
+
+                FileInfo[] Files = d.GetFiles("*.CSV");
+                List<int> numberList = new List<int>();
+
+                foreach (FileInfo file in Files)
+                {
+                    string FilePath = file.FullName;
+                    string numericvalue = new String(FilePath.Where(Char.IsDigit).ToArray());
+                    numberList.Add(Convert.ToInt32(numericvalue));
+                    IsFileExists = true;
+                }
+
+                if (IsFileExists)
+                {
+                    int maxValue = numberList.Max();
+                    maxValue = maxValue + 1;
+                    FullFilePath = FolderPath + "\\" + FileName + maxValue + ".CSV";
+                }
+                else
+                {
+                    FullFilePath = FolderPath + "\\" + FileName + 1 + ".CSV";
+                }
+
+                Dts.Variables["FullFilePath"].Value = FullFilePath;
+
+            }
+
+            catch (Exception exception)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(exception.ToString());
+                }
+            }
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}

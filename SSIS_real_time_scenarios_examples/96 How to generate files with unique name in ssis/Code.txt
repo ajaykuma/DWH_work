@@ -1,0 +1,20 @@
+get max id: 
+
+declare @cnt int
+set @cnt = (select max(id) from tbl_increment)
+set @cnt = isnull(@cnt,1)
+select @cnt
+
+----------------------------
+
+insert the max id:
+
+"insert into tbl_increment
+select "+(DT_WSTR,12) @[User::Id] +"+1
+"
+
+-------------------------------
+
+flat file connection string:
+
+"D:\\Files\\"+(DT_WSTR,12) @[User::Id] +"_Customer.CSV"

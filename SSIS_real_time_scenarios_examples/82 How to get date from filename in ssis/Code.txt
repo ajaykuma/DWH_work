@@ -1,0 +1,45 @@
+public void Main()
+		{
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+
+            try
+            {
+                string FilePath = Dts.Variables["FilePath"].Value.ToString();
+                string FileName = Path.GetFileName(FilePath);
+                string FileNamewithoutExt = Path.GetFileNameWithoutExtension(FilePath);
+
+                //CustomerData_10.10.21_11.56_PM
+                //10.10.21_11.56_PM
+
+                FileNamewithoutExt = Right(FileNamewithoutExt, 17);
+                string dd = FileNamewithoutExt.Substring(0, 2);
+                string mm = FileNamewithoutExt.Substring(3, 2);
+                string yyyy = "20"+ FileNamewithoutExt.Substring(6, 2);
+                string concatenationdate = yyyy + "/" + mm + "/" + dd;
+
+                Dts.Variables["FileDate"].Value = concatenationdate;
+                Dts.Variables["FileName"].Value = FileName;
+            }
+
+            catch(Exception ex)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(ex.ToString());
+                }
+            }
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}
+
+        public static string Right(string original, int numberCharacters)
+        {
+            return original.Substring(original.Length - numberCharacters);
+        }
+
+------------------------
+Expressions inside data flow task in the derived column
+
+FileName: (DT_STR,50,1252)@[User::FileName]
+FileDate: (DT_DATE)@[User::FileDate]

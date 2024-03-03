@@ -1,0 +1,16 @@
+using System.IO;
+
+string ArchiveFolderPath = Dts.Variables["ArchiveFolderPath"].Value.ToString();
+            string FilePath = Dts.Variables["FilePath"].Value.ToString();
+            string FileName = Path.GetFileName(FilePath);
+            string DestFilePath = ArchiveFolderPath + "\\" + FileName;
+
+            if(File.Exists(DestFilePath))
+            {
+                File.Delete(DestFilePath);
+            }
+
+            if(File.Exists(FilePath))
+            {
+                File.Move(FilePath, DestFilePath);
+            }

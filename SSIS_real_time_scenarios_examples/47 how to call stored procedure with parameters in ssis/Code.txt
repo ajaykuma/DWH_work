@@ -1,0 +1,4 @@
+"declare @FullDate date, @DayOfMonth int, @DayName varchar(50)
+exec sp_GetDate_DayOfMonth_DayName '"+ @[User::DateInYYYYMMDD] +"', @FullDate output, @DayOfMonth output, @DayName output
+select @FullDate as FullDate, @DayOfMonth as DayOfMonth, @DayName as DayName
+"

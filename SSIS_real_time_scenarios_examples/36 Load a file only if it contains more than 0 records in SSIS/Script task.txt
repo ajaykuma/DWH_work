@@ -1,0 +1,5 @@
+	    string path = Dts.Variables["FilePath"].Value.ToString();
+
+           int recordcount = System.IO.File.ReadAllLines(path).Length;
+
+            Dts.Variables["RecordCount"].Value = recordcount;

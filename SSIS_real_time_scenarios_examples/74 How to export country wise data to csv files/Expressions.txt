@@ -1,0 +1,9 @@
+SQLQuery: "SELECT [id]
+      ,[first_name]
+      ,[last_name]
+      ,[Address]
+      ,[Country]
+  FROM [Work].[dbo].[Country] where Country = '" + @[User::Country] + "' "
+
+
+FilePath: @[User::FolderPath] + "\\" +  @[User::Country] + ".CSV"

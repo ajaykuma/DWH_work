@@ -1,0 +1,28 @@
+public void Main()
+		{
+            // TODO: Add your code here User::FilePath
+
+            string FilePath = Dts.Variables["User::FilePath"].Value.ToString();
+            string FileName = Path.GetFileName(FilePath);
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+
+            try
+            {
+                WebClient client = new WebClient();
+                client.Credentials = new NetworkCredential("ftp-user", "ssis");
+                var url = "ftp://192.168.1.34/Customer/"+ FileName + "";
+                client.UploadFile(url, FilePath);
+            }
+
+            catch (Exception exception)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(exception.ToString());
+                }
+            }
+
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}

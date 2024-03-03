@@ -1,0 +1,12 @@
+"insert into FileInfo
+select '"+ @[User::FilePath] +"', null, null
+Select @@identity
+"
+
+---------------------------------------
+
+"update FileInfo
+set RecordCount = "+(DT_WSTR,12) @[User::RecordCount] +",
+Dated = getdate()
+where FileId = "+(DT_WSTR,12) @[User::FileId] +"
+"

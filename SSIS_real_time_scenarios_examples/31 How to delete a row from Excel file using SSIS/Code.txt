@@ -1,0 +1,13 @@
+using Microsoft.Office.Interop.Excel;
+using Microsoft.CSharp;
+
+			Microsoft.Office.Interop.Excel.Application excelApp = new Microsoft.Office.Interop.Excel.Application();
+            Microsoft.Office.Interop.Excel.Workbook workBook = excelApp.Workbooks.Open(@"D:\Files\Buyers.xlsx");
+            foreach (Worksheet sheet in workBook.Worksheets)
+            {
+                sheet.Rows[2].Delete();
+            }
+
+            workBook.Save();
+            workBook.Close(false);
+            excelApp.Application.Quit();

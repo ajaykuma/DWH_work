@@ -1,0 +1,4 @@
+SQLQuery: "select a.* from email a inner join temp_email b on a.Id = b.Id where b.rn between "+(DT_WSTR,50) @[User::StartId] +" and "+ (DT_WSTR,50) @[User::EndId] +"
+"
+
+flat file connection manager connection string: "D:\\Files\\"+ @[User::TableName] +".CSV"

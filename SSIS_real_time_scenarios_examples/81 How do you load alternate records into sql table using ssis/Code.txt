@@ -1,0 +1,6 @@
+int i = 0;
+    public override void Input0_ProcessInputRow(Input0Buffer Row)
+    {
+        Row.Id = i + 1;
+        i = i + 1;
+    }

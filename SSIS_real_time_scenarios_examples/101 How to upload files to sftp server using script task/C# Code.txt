@@ -1,0 +1,59 @@
+public void Main()
+		{
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+
+            try
+            {
+                FileUploadSFTP();
+            }
+
+            catch (Exception exception)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(exception.ToString());
+                }
+            }
+           
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}
+
+        public static void FileUploadSFTP()
+        {
+            var host = "192.168.1.34";
+            var port = 22;
+            var username = "hp";
+            var password = "hello";
+            string destinationSFTPFolder = @"/C:/Data to Load/";
+            string localFolderPath = @"D:\Files";
+
+            string[] files = Directory.GetFiles(localFolderPath, "*.CSV");
+
+            foreach (string filePath in files)
+            {
+                // path for file you want to upload
+                var uploadFile = filePath;
+
+                using (var client = new SftpClient(host, port, username, password))
+                {
+                    client.Connect();
+                    client.ChangeDirectory(destinationSFTPFolder);
+                    if (client.IsConnected)
+                    {
+                        using (var fileStream = new FileStream(uploadFile, FileMode.Open))
+                        {
+
+                            client.BufferSize = 4 * 1024; // bypass Payload error large files
+                            client.UploadFile(fileStream, Path.GetFileName(uploadFile));
+                        }
+                    }
+                    else
+                    {
+                    }
+                }
+
+            }
+
+        } // method end

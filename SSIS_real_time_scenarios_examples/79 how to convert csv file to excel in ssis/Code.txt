@@ -1,0 +1,95 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using System.Data.OleDb;
+
+namespace _79_how_to_convert_csv_file_to_excel_in_ssis
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+
+            try
+            {
+                string Delimiter = ",";
+                string CreateTableQuery = "";
+                string Columns = "";
+
+                string fileName = @"D:\Files\Customer.CSV";
+                string DestfileName = @"C:\Files\Customer";
+
+                if (File.Exists(DestfileName + ".XLSX"))
+                {
+                    File.Delete(DestfileName + ".XLSX");
+                }
+
+                OleDbConnection Excel_OLE_Connection = null;
+                OleDbCommand Excel_OLE_Command = null;
+                StreamReader SourceFile = null;
+
+                    StreamReader file = new StreamReader(fileName);
+                    string filenameonly = Path.GetFileNameWithoutExtension(fileName);
+                    CreateTableQuery = (" Create Table [" + filenameonly + "] (["
+                        + file.ReadLine().Replace(Delimiter, "] Text,["))
+                        + "] Text)";
+                    file.Close();
+
+                    string connstring = "Provider=Microsoft.ACE.OLEDB.12.0;" + "Data Source=" + DestfileName
+                        + ";" + "Extended Properties=\"Excel 12.0 Xml;HDR=YES;\"";
+                    Excel_OLE_Connection = new OleDbConnection();
+                    Excel_OLE_Command = new OleDbCommand();
+
+                    Excel_OLE_Connection.ConnectionString = connstring;
+                    Excel_OLE_Connection.Open();
+                    Excel_OLE_Command.Connection = Excel_OLE_Connection;
+
+                    Excel_OLE_Command.CommandText = CreateTableQuery;
+                    Excel_OLE_Command.ExecuteNonQuery();
+
+                    int i = 0;
+                    string line;
+
+                    SourceFile = new StreamReader(fileName);
+                    while ((line = SourceFile.ReadLine()) != null)
+                    {
+                        
+                            if (i == 0)
+                            {
+                                Columns = "[" + line.Replace(Delimiter, "],[") + "]";
+                            }
+                            else
+                            {
+                                string query = "Insert into [" + filenameonly + "] ("
+                                    + Columns + ") VALUES('"
+                                    + line.Replace(Delimiter, "','") + "')";
+                                query = query.Replace("''", "'");
+                                var command = query;
+                                Excel_OLE_Command.CommandText = command;
+                                Excel_OLE_Command.ExecuteNonQuery();
+                        }
+                         i++;
+
+                }
+
+                Excel_OLE_Connection.Close();
+                SourceFile.Close();
+            }
+
+            catch (Exception exception)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder+ "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(exception.ToString());
+                }
+
+            }
+
+        }
+    }
+}

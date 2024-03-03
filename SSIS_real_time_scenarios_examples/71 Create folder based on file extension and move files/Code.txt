@@ -1,0 +1,40 @@
+using System;
+using System.Data;
+using Microsoft.SqlServer.Dts.Runtime;
+using System.Windows.Forms;
+using System.IO;
+
+public void Main()
+		{
+            string SourceFolderPath = @"D:\Files";
+            string FilePath;
+            string DestFolderPath;
+            string FileName;
+            string Extension;
+
+            DirectoryInfo d = new DirectoryInfo(SourceFolderPath);
+
+            FileInfo[] Files = d.GetFiles();
+
+            foreach (FileInfo file in Files)
+            {
+
+                FilePath = file.FullName;
+                FileName = file.Name;
+                Extension = file.Extension;
+                Extension = Extension.Remove(0, 1);
+
+                DestFolderPath = SourceFolderPath + "\\" + Extension;
+
+                if (!Directory.Exists(DestFolderPath))
+                {
+
+                    Directory.CreateDirectory(DestFolderPath);
+                }
+
+                File.Move(FilePath, DestFolderPath + "\\" + FileName);
+            }
+
+
+                Dts.TaskResult = (int)ScriptResults.Success;
+		}

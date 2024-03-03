@@ -1,0 +1,25 @@
+--Check if the package is running
+
+declare @value varchar(10)
+set @value = (Select top 1 convert(varchar(8),Endtime,112)
+From  audit_log where PackageName= 'Package'
+And StartTime <=dateadd(dd,0,getdate()) 
+And errormessage =''
+Order by id desc)
+set @value = isnull(@value, 'Running')
+select @value
+
+
+------------------------------
+--wait for sometime
+
+"insert into logs_progress
+select 'Package', "+(DT_WSTR,12) @[User::Counter] +", 'Package is still running', getdate()
+go
+WAITFOR DELAY '00:00:3'
+"
+
+--------------------------------
+--stop for loop
+
+select 1000

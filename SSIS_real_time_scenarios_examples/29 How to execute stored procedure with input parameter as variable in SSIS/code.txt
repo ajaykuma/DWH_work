@@ -1,0 +1,1 @@
+"exec sp_UpdateSalary "+(DT_WSTR,12) @[User::EmpId] +", "+(DT_WSTR,12) @[User::Salary] +" "

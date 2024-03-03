@@ -1,0 +1,5 @@
+ProductID,ProductName,Rate
+1,Tea,10
+2,Coffee,25
+3,Muffin,
+5,Pizza,25

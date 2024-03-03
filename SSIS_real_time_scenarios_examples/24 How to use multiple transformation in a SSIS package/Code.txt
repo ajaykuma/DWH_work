@@ -1,0 +1,22 @@
+SSIS expression: ((DT_WSTR,20)HireDate >= "2006-01-01" && (DT_WSTR,20)HireDate <= "2008-12-31" ? "Senior" : ((DT_WSTR,20)HireDate >= "2009-01-01" && (DT_WSTR,20)HireDate <= "2010-12-31") ? "Intermediate" : (DT_WSTR,20)HireDate >= "2011-01-01" && (DT_WSTR,20)HireDate <= "2013-12-31" ? "Junior" : "")
+
+Script component code:
+
+	 if (Row.Gender == "M" && Row.MaritalStatus == "S")
+        {
+            Row.Title = "Master";
+        }
+        else if (Row.Gender == "M" && Row.MaritalStatus == "M")
+        {
+            Row.Title = "Mister";
+        }
+
+        else if (Row.Gender == "F" && Row.MaritalStatus == "S")
+        {
+            Row.Title = "Miss";
+        }
+
+        else if (Row.Gender == "F" && Row.MaritalStatus == "M")
+        {
+            Row.Title = "Missus";
+        }

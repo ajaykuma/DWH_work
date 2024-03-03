@@ -1,0 +1,2 @@
+insert into Logs values ('Record Inserted from child package','ChildPkg1.dtsx', getdate())
+

@@ -1,0 +1,35 @@
+Using Integration services project
+------------------
+--Start visual studio > create a new project > search and choose 'Integration services'
+Note** Similarly project with 'analysis services' &  'reporting services' can be created.
+--Project Name:
+--Location:
+--Solution name:
+
+--Look into Solution explorer(on right)
+Projects.params: 
+Connection Managers:(can have connection managers for project level i.e. all packages)
+Connection managers can be created at Package level.
+SSIS Packages:
+--Package.dtsx
+   --contains Control Flow > one or more data flow tasks
+
+Look into (on left)--when Data Flow tab is selected
+Favorites:
+--Destination Assistant
+--Source Assistant
+Common: (for actions/transformations)
+Other Transforms (for transformations)
+Other Sources
+Other Destinations
+
+Look into (on left)  --when Control Flow is selected
+Favorites > 'data flow task', 'Execute SQL Task'-for tasks before/after/in parallel with DFT
+Common:
+Containers:
+Other Tasks
+-------------------------
+
+#Task 1:
+--------
+

@@ -1,0 +1,37 @@
+string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+            try
+            {
+                string FileStatus = "Bad";
+                string filePath = Dts.Variables["FilePath"].Value.ToString();
+                filePath = filePath.ToLower().Replace(".csv", "");
+
+                string ds = filePath.Substring(Math.Max(0, filePath.Length - 8));
+
+                DateTime dt;
+                if (DateTime.TryParseExact(ds, "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+                {
+                    FileStatus = "Good";
+                }
+
+                Dts.Variables["FileStatus"].Value = FileStatus;
+            }
+
+            catch (Exception ex)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(ex.ToString());
+                }
+            }
+
+
+----------------------------------
+
+log for good files: "insert into [audit_log]
+select 'Package.dtsx','"+ @[User::FilePath] +"', "+ (DT_WSTR,12)@[User::RecordsInserted] +", 'File has been loaded', getdate()
+"
+
+log for bad files: "insert into [audit_log]
+select 'Package.dtsx','"+ @[User::FilePath] +"', 0, 'File has been rejected', getdate()
+"

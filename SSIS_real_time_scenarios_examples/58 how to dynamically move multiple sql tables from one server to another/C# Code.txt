@@ -1,0 +1,76 @@
+using System.Data.SqlClient;
+
+
+  static void Main(string[] args)
+        {
+            string ConfigConnectionString = "Server= DESKTOP-EKJ1P64\\SQL2019; Database= Work;Integrated Security = SSPI; ";
+            string sql = "select TableName from Config_Table where Active=1 order by TableName";
+
+            // Create source connection
+            SqlConnection connection = new SqlConnection(ConfigConnectionString);
+            SqlDataReader dataReader;
+          
+            try
+            {
+                connection.Open();
+                SqlCommand cmd = new SqlCommand(sql, connection);
+                dataReader = cmd.ExecuteReader();
+                while (dataReader.Read())
+                {
+                 string Tbl =   dataReader.GetValue(0).ToString();
+
+                   //Move sql table
+                   CopySQLTable(Tbl, true);
+                }
+
+                dataReader.Close();
+                cmd.Dispose();
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                connection.Close();
+            }
+
+
+        }
+
+        public static void CopySQLTable(string TableName, bool OverwriteDestinationTable)
+        {
+            string SourceconnectionString = "Server= DESKTOP-EKJ1P64\\SQL2019; Database= Work;Integrated Security = SSPI; ";
+            string DestconnectionString = "Server= DESKTOP-EKJ1P64\\SQL2017; Database= Work;Integrated Security = SSPI; ";
+
+            // Create source connection
+            SqlConnection source = new SqlConnection(SourceconnectionString);
+            // Create destination connection
+            SqlConnection destination = new SqlConnection(DestconnectionString);
+            SqlCommand cmd=null;            
+            
+            //delete from dest
+            if(OverwriteDestinationTable)
+            cmd = new SqlCommand("TRUNCATE TABLE " + TableName + "", destination);
+
+            source.Open();
+            destination.Open();
+
+            //delete from dest
+            if (OverwriteDestinationTable)
+                cmd.ExecuteNonQuery();
+
+            cmd = new SqlCommand("SELECT * FROM "+ TableName + "", source);
+            // Open source and destination connections.
+           
+            // Execute reader
+            SqlDataReader reader = cmd.ExecuteReader();
+            // Create SqlBulkCopy
+            SqlBulkCopy bulkData = new SqlBulkCopy(destination);
+            // Set destination table name
+            bulkData.DestinationTableName = TableName;
+            // Write data
+            bulkData.WriteToServer(reader);
+            // Close objects
+            bulkData.Close();
+            destination.Close();
+            source.Close();
+
+        }

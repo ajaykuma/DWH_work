@@ -1,0 +1,29 @@
+// first script task
+Dts.Variables["TotalFiles"].Value = System.IO.Directory.GetFiles(Dts.Variables["SourceDirectory"].Value.ToString(), "*", System.IO.SearchOption.TopDirectoryOnly).Length;
+
+
+
+// second script task
+using System.IO;
+
+string SourceDirectory = Dts.Variables["SourceDirectory"].Value.ToString();
+            string FileName = "";
+
+            var files = new DirectoryInfo(SourceDirectory).GetFiles("*.CSV");
+            string OldestFile = "";
+
+            DateTime lastModified = DateTime.MaxValue;
+
+            foreach (FileInfo file in files)
+            {
+                if (file.LastWriteTime < lastModified)
+                {
+                    lastModified = file.LastWriteTime;
+                    OldestFile = file.Name;
+                }
+            }
+
+            FileName = Path.GetFileName(OldestFile);
+
+            Dts.Variables["ArchiveFilePath"].Value = Dts.Variables["ArchiveDirectory"].Value + "\\" + FileName;
+            Dts.Variables["SourceFilePath"].Value = Dts.Variables["SourceDirectory"].Value + "\\" + OldestFile;

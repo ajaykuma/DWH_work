@@ -1,0 +1,10 @@
+select Active from Config_Flow where FlowName = 'Flow 1'
+
+@[User::Active]==true
+
+update Config_Flow
+set Active =0
+where  FlowName = 'Flow 1'
+
+update Config_Flow
+set Active =1

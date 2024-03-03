@@ -1,0 +1,85 @@
+using System;
+using System.Data;
+using Microsoft.SqlServer.Dts.Runtime;
+using System.Windows.Forms;
+using Microsoft.VisualBasic.FileIO;
+using System.Data.SqlClient;
+using System.IO;
+
+public void Main()
+		{
+            DirectoryInfo d = new DirectoryInfo(@"D:\Files");
+
+            FileInfo[] Files = d.GetFiles("*.CSV");
+            string FileName = "";
+            string shortFileName;
+
+            foreach (FileInfo file in Files)
+            {
+                FileName = file.FullName;
+                shortFileName = Path.GetFileNameWithoutExtension(FileName);
+
+                DataTable csvData = GetDataTabletFromCSVFile(FileName);
+
+                InsertDataIntoSQLServerUsingSQLBulkCopy(csvData, shortFileName);
+
+            }
+
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}
+
+        private static DataTable GetDataTabletFromCSVFile(string csv_file_path)
+        {
+            DataTable csvData = new DataTable();
+            try
+            {
+                using (TextFieldParser csvReader = new TextFieldParser(csv_file_path))
+                {
+                    csvReader.SetDelimiters(new string[] { "," });
+                    csvReader.HasFieldsEnclosedInQuotes = true;
+                    string[] colFields = csvReader.ReadFields();
+                    foreach (string column in colFields)
+                    {
+                        DataColumn datecolumn = new DataColumn(column);
+                        datecolumn.AllowDBNull = true;
+                        csvData.Columns.Add(datecolumn);
+                    }
+                    while (!csvReader.EndOfData)
+                    {
+                        string[] fieldData = csvReader.ReadFields();
+                        //Making empty value as null
+                        for (int i = 0; i < fieldData.Length; i++)
+                        {
+                            if (fieldData[i] == "")
+                            {
+                                fieldData[i] = null;
+                            }
+                        }
+                        csvData.Rows.Add(fieldData);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            return csvData;
+        }
+
+        // Copy the DataTable to SQL Server using SqlBulkCopy
+        public static void InsertDataIntoSQLServerUsingSQLBulkCopy(DataTable csvFileData, string shortFileName)
+        {
+            using (SqlConnection dbConnection = new SqlConnection(@"Data Source=DESKTOP-EKJ1P64\SQL2019; Initial Catalog=School; Integrated Security=SSPI;"))
+            {
+                dbConnection.Open();
+                using (SqlBulkCopy s = new SqlBulkCopy(dbConnection))
+                {
+                    s.DestinationTableName = shortFileName;
+
+                    foreach (var column in csvFileData.Columns)
+                        s.ColumnMappings.Add(column.ToString(), column.ToString());
+
+                    s.WriteToServer(csvFileData);
+                }
+            }
+        }

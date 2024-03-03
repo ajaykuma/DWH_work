@@ -1,0 +1,112 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace _84_How_to_move_multiple_files_from_one_folder
+{
+    internal static class Program
+    {
+
+        static void Main(string[] args)
+        {
+
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+
+            try
+            {
+                int j = 25;
+                bool IsMovedFile = false;
+                for (int i = 1; i < j; i++)
+                {
+
+                    // started code to move the files
+                    string rootFolderPath = @"D:\Files\Production data";
+                    string destinationPath = @"C:\Files";
+                    string filesToMove = @"*.*";
+                    string[] fileList = System.IO.Directory.GetFiles(rootFolderPath, filesToMove);
+                    foreach (string file in fileList)
+                    {
+                        string filename = Path.GetFileName(file);
+                        File.Move(file, destinationPath + "\\" + filename);
+                        IsMovedFile = true; // place this code where you are actually moving the file
+                    }
+                    //completed code to move the files
+
+                    if (IsMovedFile)
+                    {
+                       
+
+                        if (File.Exists(LogFolder + "\\" + "Progress.txt"))
+                        {
+                            using (StreamWriter sw = File.AppendText(LogFolder + "\\" + "Progress.txt"))
+                            {
+                                sw.WriteLine("This is the " + i.ToString() + " iteration. Files have been moved. Dated: " + System.DateTime.Now.ToString());
+                            }
+                        }
+                        else
+                        {
+                            using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "Progress.txt"))
+                            {
+                                sw.WriteLine("This is the " + i.ToString() + " iteration. Files have been moved. Dated: " + System.DateTime.Now.ToString());
+                            }
+                        }
+
+                        i = 25;
+                    }
+                    else
+                    {
+
+                        if (File.Exists(LogFolder + "\\" + "Progress.txt"))
+                        {
+                            using (StreamWriter sw = File.AppendText(LogFolder + "\\" + "Progress.txt"))
+                            {
+                                sw.WriteLine("This is the " + i.ToString() + " iteration. Dated: " + System.DateTime.Now.ToString());
+                            }
+                        }
+                        else
+                        {
+                            using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "Progress.txt"))
+                            {
+                                sw.WriteLine("This is the " + i.ToString() + " iteration. Dated: " + System.DateTime.Now.ToString());
+                            }
+                        }
+
+                        //sleep for 10 sec
+                         System.Threading.Thread.Sleep(10000);
+
+                        //sleep for 1 min
+                        // System.Threading.Thread.Sleep(60000);
+
+                        //sleep for 60 min
+                       // System.Threading.Thread.Sleep(60 * 60000);
+
+                    }
+
+
+                }
+
+
+            }
+
+            catch (Exception ex)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(ex.ToString());
+                }
+
+            }
+
+        }
+
+
+
+    }
+
+
+}
+

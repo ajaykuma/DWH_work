@@ -1,0 +1,21 @@
+--On Pre execute event
+"insert into audit_log
+select 'Package', '"+ @[System::SourceName] +"', getdate(), null, ''
+select @@IDENTITY
+"
+
+--On Post Execute event
+"update audit_log
+set EndTime = getdate()
+where Id = "+ (DT_WSTR,12)@[User::Id] +"
+"
+
+"update audit_log
+set EndTime = getdate()
+where Id = (select top 1 Id from audit_log where packagename = 'Package' and TaskName = 'Package' and EndTime is null order by id desc)
+"
+
+--On Error event
+"insert into audit_log
+select 'Package', '"+ @[System::SourceName] +"', getdate(), null, '"+ replace(@[System::ErrorDescription],"'","") +"'
+"

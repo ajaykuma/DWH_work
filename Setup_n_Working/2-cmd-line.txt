@@ -1,0 +1,87 @@
+--
+from command line
+C:\Windows\system32>sqlcmd -E -S DESKTOP-Q6Q9KGQ\SQLEXPRESS
+1>
+Note**The number 1> means that it is connected and ready to receive sentences to execute.
+
+--check the current database in sqlcmd
+1> select db_name()
+2> go
+
+--list the databases in the SQL Instance:
+1> select name from sys.databases
+2> go
+
+--check if the SQL Server is case sensitive in sqlcmd
+SELECT SERVERPROPERTY('COLLATION')
+GO
+Note**CI means case insensitive and CS is case sensitive. AS means Accent Sensitive and AI is Accent Insensitive.
+
+--check the SQL Server edition in SQL
+express edition
+
+--to check the SQL Server Authentication in sqlcmd
+Before Azure, there were two options to Authenticate to SQL Server:
+
+Windows Authentication where you can use an Active directory account or a local Windows account.
+Windows Authentication and SQL Authentication where you can also authenticate using an account created in SQL Server.
+SELECT SERVERPROPERTY('IsIntegratedSecurityOnly')
+GO
+
+If the result is 0, it means that both authentications are enabled. If it is 1, only Windows Authentication is enabled.
+
+--How to list the variables set
+
+2> :ListVar
+SQLCMDCOLSEP = " "
+SQLCMDCOLWIDTH = "0"
+SQLCMDDBNAME = ""
+SQLCMDEDITOR = "edit.com"
+SQLCMDERRORLEVEL = "0"
+SQLCMDHEADERS = "0"
+SQLCMDINI = ""
+SQLCMDLOGINTIMEOUT = "8"
+SQLCMDMAXFIXEDTYPEWIDTH = "0"
+SQLCMDMAXVARTYPEWIDTH = "256"
+SQLCMDPACKETSIZE = "4096"
+SQLCMDSERVER = "DESKTOP-Q6Q9KGQ\SQLEXPRESS"
+SQLCMDSTATTIMEOUT = "0"
+SQLCMDUSER = "Ajay"
+SQLCMDWORKSTATION = "DESKTOP-Q6Q9KGQ"
+
+--Running sqlcmd in command mode
+  --run a T-SQL script and receive the output in a file
+
+--create a folder SQL in say D:\
+create a file: columns.sql
+select * from dbo.spt_monitor
+go
+
+sqlcmd -E -S DESKTOP-Q6Q9KGQ\SQLEXPRESS -i D:\SQL\columns.sql -o D:\SQL\exit.txt
+
+--create  back up in sqlcmd
+create a file : backup.sql
+BACKUP DATABASE [master] TO  DISK = N'D:\SQL\backup.bak'
+GO
+
+sqlcmd -E -S DESKTOP-Q6Q9KGQ\SQLEXPRESS -i D:\SQL\backup.sql -o D:\SQL\output.txt
+
+--listing tables
+1> select table_name from master.INFORMATION_SCHEMA.tables
+2> go
+
+--listing columns
+1> select table_name,column_name from master.INFORMATION_SCHEMA.columns
+2> go
+
+--to see all options
+C:\Windows\system32>sqlcmd -?
+
+
+
+
+
+
+
+
+

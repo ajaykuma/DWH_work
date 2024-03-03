@@ -1,0 +1,46 @@
+public void Main()
+		{
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+
+            try
+            {
+
+                var fromAddress = new MailAddress("skumar84770@gmail.com", "SSIS Package Notification");
+                var toAddress = new MailAddress("aqil33@gmail.com", "");
+
+                const string fromPassword = "ugimupoilgfbmsmd";
+
+                var smtp = new SmtpClient
+                {
+                    Host = "smtp.gmail.com",
+                    Port = 25,
+                    EnableSsl = true,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                    Timeout = 20000
+                };
+
+                MailMessage mailmsg = new MailMessage();
+                mailmsg.Subject = "File has been rejected";
+                mailmsg.Body = "We found some invalid data in file";
+                mailmsg.From = new MailAddress(fromAddress.ToString());
+                mailmsg.To.Add(toAddress);
+
+                {
+                    smtp.Send(mailmsg);
+                }
+            }
+
+            catch (Exception exception)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(exception.ToString());
+                }
+            }
+
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}

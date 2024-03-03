@@ -1,0 +1,27 @@
+public void Main()
+		{
+            string Filepath = Dts.Variables["FilePath"].Value.ToString();
+            string ExcelSheet = "";
+
+            Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
+            Microsoft.Office.Interop.Excel.Workbook excelBook = xlApp.Workbooks.Open(Filepath);
+
+            String[] excelSheets = new String[excelBook.Worksheets.Count];
+            int i = 0;
+            foreach (Microsoft.Office.Interop.Excel.Worksheet wSheet in excelBook.Worksheets)
+            {
+                if (i == 0)
+                {
+                    excelSheets[i] = wSheet.Name;
+                    ExcelSheet = wSheet.Name;
+                }
+                i++;
+            }
+            excelBook.Close();
+            xlApp.Quit();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(xlApp);
+
+            Dts.Variables["SheetName"].Value = ExcelSheet+ "$";
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}

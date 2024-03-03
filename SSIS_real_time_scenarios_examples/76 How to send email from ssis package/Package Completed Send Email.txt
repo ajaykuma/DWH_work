@@ -1,0 +1,35 @@
+using System.Net.Mail;
+using System.Net;
+
+public void Main()
+        {
+
+            var fromAddress = new MailAddress("skumar84770@gmail.com", "SSIS Package Notification");
+            var toAddress = new MailAddress("aqil33@gmail.com", "");
+
+            const string fromPassword = "zwipllteeunteftm";
+
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 25,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                Timeout = 20000
+            };
+
+            MailMessage mailmsg = new MailMessage();
+            mailmsg.IsBodyHtml = true;
+            mailmsg.Subject = "SSIS package has been Completed";
+            mailmsg.Body = "Records Loaded:- " + Dts.Variables["RecordsLoaded"].Value.ToString();
+            mailmsg.From = new MailAddress(fromAddress.ToString());
+            mailmsg.To.Add(toAddress);
+
+            {
+                smtp.Send(mailmsg);
+            }
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+        }

@@ -1,0 +1,44 @@
+using System.IO;
+using System.Linq;
+
+public void Main()
+		{
+            DirectoryInfo info = new DirectoryInfo(@"D:\Files");
+            FileInfo[] files = info.GetFiles().OrderBy(p => p.LastWriteTime).ToArray();
+            Array.Reverse(files);
+
+            int i = 0;
+            int currentmonth = 0;
+            foreach (FileInfo fi in files)
+            {
+                if (i == 0)
+                {
+                    currentmonth = Convert.ToInt32(fi.LastWriteTime.ToString("MM"));
+                }
+                else
+                {
+                    //if (fi.LastWriteTime < DateTime.Now.AddMonths(-3))
+                    //{
+
+                    int newmonth = Convert.ToInt32(fi.LastWriteTime.ToString("MM"));
+
+                    if (currentmonth == newmonth)
+                    {
+                        fi.Delete();
+                    }
+                    else
+
+                    {
+                        currentmonth = Convert.ToInt32(fi.LastWriteTime.ToString("MM"));
+                    }
+
+                    //  
+                    // }
+                }
+
+                i = i + 1;
+
+            }
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}

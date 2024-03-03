@@ -1,0 +1,22 @@
+public override void PreExecute()
+    {
+        base.PreExecute();
+        i = Variables.TotalRowCount;
+    }
+
+
+ int i = 0;
+    public override void Input0_ProcessInputRow(Input0Buffer Row)
+    {
+        Row.RN = i + 1;
+        i = i + 1;
+    }
+
+
+----------------------
+get the total number of records loaded
+
+"declare @cnt int
+set @cnt = "+( DT_WSTR,12) @[User::TotalRowCount] +" + "+ ( DT_WSTR,12) @[User::RowCount] +"
+select @cnt
+"

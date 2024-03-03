@@ -1,0 +1,12 @@
+SELECT [Email_Id]
+      ,[first_name]
+      ,[last_name]
+      ,[email]
+      ,[Address]
+      ,[City]
+      ,[State]
+      ,[Zip]
+      ,[SSN]
+      ,[Birthdate]
+	  ,ntile(3) over(order by [Email_Id]) as Part
+  FROM [Work].[dbo].[Email]

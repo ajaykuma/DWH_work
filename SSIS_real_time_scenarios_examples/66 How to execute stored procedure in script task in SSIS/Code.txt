@@ -1,0 +1,35 @@
+using System;
+using System.Data;
+using Microsoft.SqlServer.Dts.Runtime;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+	public void Main()
+		{
+            // TODO: Add your code here
+
+            ExecuteSP("Email file got loaded", 50000);
+
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}
+
+        private static void ExecuteSP(string text, int recordsInserted)
+        {
+            string connectionString = @"Server = DESKTOP-EKJ1P64\SQL2019; Database = Work; Trusted_Connection = True; ";
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("sp_DoAuditing", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add("@Text", SqlDbType.VarChar).Value = text;
+                    cmd.Parameters.Add("@RecordsInserted", SqlDbType.Int).Value = recordsInserted;
+
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+        }

@@ -1,0 +1,9 @@
+select distinct cast(Part as int) as Part from temp_Email order by Part
+
+------------------------
+
+SQLQuery: "select a.* from Email a inner join temp_email b on a.email_id = b.email_id where b.part="+(DT_WSTR,12) @[User::Part] +" "
+
+------------------------
+
+Connection string: "D:\\Files\\Email_"+ (DT_WSTR,12) @[User::Part] +".CSV"

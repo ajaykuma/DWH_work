@@ -1,0 +1,70 @@
+ public void Main()
+        {
+            // TODO: Add your code here
+            //RunId
+
+            var fromAddress = new MailAddress("skumar84770@gmail.com", "Test-SSIS Package Notification");
+            var toAddress = new MailAddress("skumar84770@gmail.com", "");
+
+            const string fromPassword = "Ssis#123";
+
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                Timeout = 20000
+            };
+
+            string Server = @"DESKTOP-EKJ1P64\SQL2019";
+            string Database = "Work";
+            string Query = "";
+
+            SqlConnection con = new SqlConnection();
+            con.ConnectionString = "Data Source= " + Server + "; Initial Catalog= " + Database + "; Integrated Security=SSPI";
+            con.Open();
+
+            SqlDataReader myReader = null;
+
+            Query = @"select Id from Email where Id not in (select Id from Email_Staging) ";
+
+            SqlCommand myCommand = new SqlCommand(Query, con);
+
+            string MailBody = "";
+            myReader = myCommand.ExecuteReader();
+
+            while (myReader.Read())
+            {
+                MailBody += "<tr> " +
+                               "<td>" + myReader["Id"].ToString() + " </td>" +
+                                   "</tr>";
+
+            }
+
+
+            MailBody += "</table>";
+
+            String CompleteMAilMessage = "<html><head></head><body>" +
+            @"<table border=""1"" cellpadding=""2"" style=""border-collapse: collapse;""><tr style=""color:white;background-Color:SkyBlue;font-weight:bold;"">" +
+            "<td>Id</td>" + "</tr>" + MailBody + "</table></body></html>";
+
+            MailMessage mailmsg = new MailMessage();
+            mailmsg.IsBodyHtml = true;
+            mailmsg.Subject = "Salary update SSIS package got completed successfully.";
+            mailmsg.Body = CompleteMAilMessage;
+            mailmsg.From = new MailAddress(fromAddress.ToString());
+            mailmsg.To.Add(toAddress);
+
+            {
+                smtp.Send(mailmsg);
+            }
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+        }
+
+---------------------------------
+Go to here to enable the lesssecureapp to send email from C#
+https://myaccount.google.com/lesssecureapps

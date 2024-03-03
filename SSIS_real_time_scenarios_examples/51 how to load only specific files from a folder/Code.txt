@@ -1,0 +1,72 @@
+using System.Data.SqlClient;
+using System.Collections.Generic;
+
+public void Main()
+		{
+            // TODO: Add your code here ShouldLoadtheFile
+            string connString = @"Server =DESKTOP-EKJ1P64\SQL2019; Database = Work; Trusted_Connection = True;";
+
+            //variables to store the query results
+            string FileName;
+            List<string> names = new List<string>();
+
+            try
+            {
+                //sql connection object
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+
+                    //retrieve the SQL Server instance version
+                    string query = @"select FileNames from FileNames";
+                    //define the SqlCommand object
+                    SqlCommand cmd = new SqlCommand(query, conn);
+
+                    //open connection
+                    conn.Open();
+
+                    //execute the SQLCommand
+                    SqlDataReader dr = cmd.ExecuteReader();
+
+                    //check if there are records
+                    if (dr.HasRows)
+                    {
+                        while (dr.Read())
+                        {
+                            FileName = dr.GetString(0);
+                            names.Add(FileName);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No data found.");
+                    }
+
+                    //close data reader
+                    dr.Close();
+
+                    //close connection
+                    conn.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                //display error message
+                Console.WriteLine("Exception: " + ex.Message);
+            }
+
+            string SSISFileName = System.IO.Path.GetFileName(Dts.Variables["FilePath"].Value.ToString());
+
+            if (names.Contains(SSISFileName))
+            {
+
+                Dts.Variables["ShouldLoadtheFile"].Value = "Yes";
+            }
+            else
+
+            {
+
+                Dts.Variables["ShouldLoadtheFile"].Value = "No";
+            }
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}

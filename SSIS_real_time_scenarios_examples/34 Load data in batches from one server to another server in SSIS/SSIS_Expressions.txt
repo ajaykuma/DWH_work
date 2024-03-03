@@ -1,0 +1,7 @@
+SQLQuery = "select * from Emails where part = "+(DT_WSTR,12) @[User::Part] +"  "
+
+Execute SQL Task expressions : 
+
+"insert into [tbl_log]
+  select 'Package.dtsx', '"+(DT_WSTR,12) @[User::Part] +" completed', getdate()
+"

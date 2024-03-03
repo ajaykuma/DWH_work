@@ -1,0 +1,24 @@
+static void Main(string[] args)
+        {
+
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+
+            try
+            {
+                WebClient client = new WebClient();
+                client.Credentials = new NetworkCredential("ftp-user", "ssis");
+                var url = "ftp://192.168.1.34/Company.csv";
+                client.UploadFile(url, @"D:\Files\Company.csv");
+            }
+
+            catch(Exception exception)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(exception.ToString());
+                }
+            }
+
+
+        }

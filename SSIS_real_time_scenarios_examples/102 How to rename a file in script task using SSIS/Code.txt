@@ -1,0 +1,18 @@
+using System.IO;
+
+
+public void Main()
+		{
+            // TODO: Add your code here User::DestFilePath,User::SourceFilePath
+
+            string SourceFilePath = Dts.Variables["SourceFilePath"].Value.ToString();
+            string DestFilePath = Dts.Variables["DestFilePath"].Value.ToString();
+
+            if (File.Exists(SourceFilePath))
+            {
+                File.Move(SourceFilePath, DestFilePath);
+            }
+
+
+			Dts.TaskResult = (int)ScriptResults.Success;
+		}

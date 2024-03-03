@@ -1,0 +1,65 @@
+using System;
+using System.Data;
+using Microsoft.SqlServer.Dts.Runtime;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.IO;
+
+public void Main()
+		{
+            string connectionString = @"Server = DESKTOP-EKJ1P64\SQL2019; Database = Work; Trusted_Connection = True; ";
+            string DatabaseName = "Work";
+            string TableName = "Email";
+            string Delimiter = "|";
+
+            SqlConnection sqlCon = new SqlConnection(connectionString);
+            sqlCon.Open();
+
+            SqlCommand sqlCmd = new SqlCommand(@"select DatabaseName, TableName from [dbo].[Config_Table] where active =1", sqlCon);
+            SqlDataReader reader = sqlCmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                DatabaseName = reader.GetString(0);
+                TableName = reader.GetString(1);
+
+                ExportData(DatabaseName, TableName, Delimiter, connectionString);
+            }
+
+            reader.Close();
+            sqlCon.Close();
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}
+
+
+  private static void ExportData(string DatabaseName, string TableName, string Delimiter, string connectionString)
+        {
+
+            SqlConnection sqlCon = new SqlConnection(connectionString);
+            sqlCon.Open();
+
+            SqlCommand sqlCmd = new SqlCommand(@"SELECT * FROM " + DatabaseName + ".." + TableName + "", sqlCon);
+            SqlDataReader reader = sqlCmd.ExecuteReader();
+
+            string fileName = @"D:\Files\" + TableName + ".csv";
+            StreamWriter sw = new StreamWriter(fileName);
+            object[] output = new object[reader.FieldCount];
+
+            for (int i = 0; i < reader.FieldCount; i++)
+                output[i] = reader.GetName(i);
+
+
+            sw.WriteLine(string.Join(Delimiter, output));
+
+            while (reader.Read())
+            {
+                reader.GetValues(output);
+                sw.WriteLine(string.Join(Delimiter, output));
+            }
+
+            sw.Close();
+            reader.Close();
+            sqlCon.Close();
+
+        }

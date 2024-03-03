@@ -1,0 +1,8 @@
+--Check the DLLs in GAC using below path
+C:\Windows\Microsoft.NET\Assembly
+
+--To add dll for verification skipping run below command from developer command prompt
+sn -Vr "D:\Files\133 How to upload files to sftp server\renci.sshnet\renci.sshnet.dll"
+
+--To add a dll to GAC, run below command from developer command prompt
+gacutil -i "D:\Files\133 How to upload files to sftp server\renci.sshnet\renci.sshnet.dll"

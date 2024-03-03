@@ -1,0 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.SqlServer.Dts.Runtime;
+
+namespace Execute_SSIS_package
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            //D:\Files\Emails10Records.csv
+
+            Application app = new Application();
+            Package package = null;
+            package = app.LoadPackage(@"D:\SSIS Packages\Load Email file\Load Email file\Package.dtsx", null);
+            package.Variables["FilePath"].Value = @"D:\Files\Emails10Records.csv";
+            package.Execute();
+
+        }
+    }
+}

@@ -1,0 +1,40 @@
+-----------------------------------------
+public override void Input0_ProcessInputRow(Input0Buffer Row)
+    {
+        string AllData = Row.AllData;
+        string Address = "";
+
+        string[] values = AllData.Split(',');
+
+        for (int i = 0; i < values.Length; i++)
+        {
+
+            //id
+            if (i == 0)
+            {
+                Row.Id = Convert.ToInt32(values[i]);
+            }
+
+            //Name
+           else if (i == 1)
+            {
+                Row.Name = values[i];
+            }
+
+            //Sal
+            else if (i == 2)
+            {
+                Row.Sal = Convert.ToInt32(values[i]);
+            }
+
+            //Address
+            else
+            {
+               Address = Address + " " + values[i];
+            }
+
+        }
+
+        Row.Address = Address.Trim();
+
+    }

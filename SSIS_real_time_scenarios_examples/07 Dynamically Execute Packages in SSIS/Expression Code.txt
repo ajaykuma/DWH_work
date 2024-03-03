@@ -1,0 +1,14 @@
+-- get all SSIS packages to execute
+
+select PackageFolderPath, PackageName from Pkg_Details where Active=1
+
+--Pre log
+
+"insert into Logs values ('Package Started','"+ @[User::PackageName] +"', getdate())"
+
+--Post Log
+
+"insert into Logs values ('Package Completed','"+ @[User::PackageName] +"', getdate())"
+
+
+

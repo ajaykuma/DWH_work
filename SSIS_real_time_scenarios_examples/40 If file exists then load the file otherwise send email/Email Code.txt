@@ -1,0 +1,36 @@
+		public void Main()
+		{
+
+            var fromAddress = new MailAddress("skumar84770@gmail.com", "Test-SSIS Package Notification");
+            var toAddress = new MailAddress("skumar84770@gmail.com", "");
+
+            const string fromPassword = "Ssis@1234";
+
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                Timeout = 20000
+            };
+
+            MailMessage mailmsg = new MailMessage();
+            mailmsg.IsBodyHtml = true;
+            mailmsg.Subject = "Notification: No file is available to process";
+            mailmsg.Body = "This is to notify you that SSIS package ran but found no file to load.";
+            mailmsg.From = new MailAddress(fromAddress.ToString());
+            mailmsg.To.Add(toAddress);
+
+            {
+                smtp.Send(mailmsg);
+            }
+
+			Dts.TaskResult = (int)ScriptResults.Success;
+	}
+		
+--------------------------------------
+Go to here to enable the lesssecureapp to send email from C#
+https://myaccount.google.com/lesssecureapps

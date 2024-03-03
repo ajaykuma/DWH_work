@@ -1,0 +1,16 @@
+ 	   string IsFileModifiedToday = "N";
+            string FilePath = Dts.Variables["FilePath"].Value.ToString();
+
+            DateTime lastModified = System.IO.File.GetLastWriteTime(FilePath);
+
+            DateTime today = DateTime.Today;
+            string strToday = today.ToString("d");
+
+            string strlastModified = lastModified.ToString("d");
+
+            if (strToday == strlastModified)
+            {
+                IsFileModifiedToday = "Y";
+            }
+
+            Dts.Variables["IsFileModifiedToday"].Value = IsFileModifiedToday;

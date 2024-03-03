@@ -1,0 +1,91 @@
+#region Namespaces
+using System;
+using System.Data;
+using Microsoft.SqlServer.Dts.Runtime;
+using System.Windows.Forms;
+using System.Net.Mail;
+using System.IO;
+using System.Data.OleDb;
+using System.Net;
+#endregion
+
+public void Main()
+		{
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+
+            try
+            {
+
+                var fromAddress = new MailAddress("skumar84770@gmail.com", "SSIS Package Notification");
+                var toAddress = new MailAddress("aqil33@gmail.com", "");
+
+                const string fromPassword = "ugimupoilgfbmsmd";
+
+                var smtp = new SmtpClient
+                {
+                    Host = "smtp.gmail.com",
+                    Port = 25,
+                    EnableSsl = true,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                    Timeout = 20000
+                };
+
+                string _path = Dts.Variables["User::FilePath"].Value.ToString();
+                string constr = string.Format(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Extended Properties=""Excel 12.0 Xml;HDR=YES;""", _path);
+                OleDbConnection Econ = new OleDbConnection(constr);
+                string Query = string.Format("Select Id, first_name , last_name, email, gender FROM [{0}]", "data$");
+                Econ.Open();
+
+                DataSet ds = new DataSet();
+                OleDbDataAdapter oda = new OleDbDataAdapter(Query, Econ);
+                Econ.Close();
+                oda.Fill(ds);
+                DataTable Exceldt = ds.Tables[0];
+                string MailBody = "";
+
+                //Exceldt.Rows.Count
+                for (int i = 0; i < 50; i++)
+                {
+                    MailBody += "<tr> " +
+                                   "<td>" + Exceldt.Rows[i]["Id"].ToString() + " </td>" +
+                                   "<td>" + Exceldt.Rows[i]["first_name"].ToString() + " </td>" +
+                                   "<td>" + Exceldt.Rows[i]["last_name"].ToString() + " </td>" +
+                                   "<td>" + Exceldt.Rows[i]["email"].ToString() + " </td>" +
+                                   "<td>" + Exceldt.Rows[i]["gender"].ToString() + " </td>" +
+
+                                       "</tr>";
+
+                }
+
+                MailBody += "</table>";
+
+                String CompleteMAilMessage = "<html><head></head><body>" +
+                @"<table border=""1"" cellpadding=""2"" style=""border-collapse: collapse;""><tr style=""color:white;background-Color:SkyBlue;font-weight:bold;"">" +
+                "<td>Id</td><td>First name</td><td>Last Name</td><td>Email</td><td>Gender</td>" + "</tr>" + MailBody + "</table></body></html>";
+
+                MailMessage mailmsg = new MailMessage();
+                mailmsg.IsBodyHtml = true;
+                mailmsg.Subject = "SSIS package completed successfully.";
+                mailmsg.Body = CompleteMAilMessage;
+                mailmsg.From = new MailAddress(fromAddress.ToString());
+                mailmsg.To.Add(toAddress);
+
+                {
+                    smtp.Send(mailmsg);
+                }
+            }
+
+            catch (Exception exception)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(exception.ToString());
+                }
+            }
+
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}

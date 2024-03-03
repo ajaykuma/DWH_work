@@ -1,0 +1,37 @@
+public void Main()
+		{
+            string currentdatetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string LogFolder = @"D:\Files\Logs\";
+
+            try
+            {
+                string ConString = @"data source=DESKTOP-EKJ1P64\SQL2019;initial catalog=Test;persist security info=True;Integrated Security=SSPI;";
+                string CmdString = "select * from Customer";
+                SqlConnection con;
+                SqlCommand cmd;
+                SqlDataAdapter sda;
+                DataTable dt;
+                using (con = new SqlConnection(ConString))
+                {
+                    cmd = new SqlCommand(CmdString, con);
+                    con.Open();
+                    dt = new DataTable("Customer");
+                    sda = new SqlDataAdapter(cmd);
+                    sda.Fill(dt);
+                    dt.WriteXml("D:\\Files\\Customer.xml");
+                    con.Close();
+                }
+
+            }
+
+            catch (Exception exception)
+            {
+                using (StreamWriter sw = File.CreateText(LogFolder + "\\" + "ErrorLog_" + currentdatetime + ".log"))
+                {
+                    sw.WriteLine(exception.ToString());
+                }
+            }
+
+
+            Dts.TaskResult = (int)ScriptResults.Success;
+		}
