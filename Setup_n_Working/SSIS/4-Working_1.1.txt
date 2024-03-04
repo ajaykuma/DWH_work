@@ -18,6 +18,14 @@ In previous package2> remove the connection between Flat File and OLE DB Destina
    Name of the table or view : New > Destination_Bankdata 
    validate mappings <OK>
 
+Control Flow:
+ Dataflow : OLE Db Source > Derived Column > Ole DB Destination
+ Execute SQL Task : select * from Destination_bank2
+
+<refer>: Package2.dtsx
+
+----------------
+
    
   
   

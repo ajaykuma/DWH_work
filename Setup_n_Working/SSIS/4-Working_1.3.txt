@@ -1,0 +1,27 @@
+--Using Merge or Merge Join, conditional split, sort, multicast and grouping data flows into groups.
+--creating a control flow with 'sql for validation' > datflow1 > 'sql for validation' > dataflow2
+
+OLE DB Source- table> dbo.Bank_full (contains 45211 rows)
+OLE DB Source1- table> dbo.Bank_full5 (contains 45211 - rows that contain marital="married")
+sort both sources (as required by merge)
+Note** as part of merge we can choose selective columns from both inputs and rest can be ignored.
+OLE DB Destination > Destination_bank_merged
+
+Group these into one group : group1 --> belongs to DF1 (in control flow)
+
+Now for Group2
+OLE DB Source > reading from Destination_bank_merged >
+Conditional split > case 1 : age <= 50 > Multicast > OLE DB Destination > mc_tbl1
+                                                   > OLE DB Destination > mc_tbl2
+                    case 2: age >= 51  > Flat file destination > C:\Users\Ajay\Desktop\Others\sampledata\Extracted_data.txt
+Group all in second group : group2 and copy it into a new data flow.
+Then delete from this dataflow.
+                             group2--> belongs to DF2 (in control flow)
+
+Now insert an 'execute sql task' for validation between DF1 and DF2
+execute sql task contains > select * from destination_bank_merged which was table populated with merged data in DF1.
+
+Test..
+
+
+

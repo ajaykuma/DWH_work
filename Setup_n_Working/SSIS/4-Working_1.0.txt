@@ -59,12 +59,12 @@ we can also directly use 'Source or Destination Assistant' to create sources to 
 Step1: --Use existing connection manager and create a source to read 'Bank_full.csv' ie use 'Flat File Source' and double click to 
          configure/edit its properties.
 Step2: --Use OLE DB Destination to send data into a database. Connect Flat File to Ole DB Destination.
-Step3: configure OLE DB Destination to point to a new table. (Bank_full2) [with allowing nulls, identity]
+Step3: configure OLE DB Destination to point to a new table. (Destination_bank1) [with allowing nulls, identity]
 
 Click on control flow and add an 'Execute SQL Task' followed by your 'Data Flow Task'.
 edit 'Execute SQL Task' > 
 connection: select mydb* connection manager
-SQLStatement: select * from 
+SQLStatement: select * from <table_name>
 change 'ByPassPrepare': true to False and test Parse Query.
 
 <save>
@@ -96,6 +96,14 @@ We can configure the XML files and open the logs in tools such as browser, notep
 >SSIS Log provider for TextFiles > create file (provide a path)
 
 Test it..
+
+Control Flow:
+ Dataflow : Flat File Source >  OLE DB Destination
+ Execute SQL Task : select * from Destination_bank1
+
+refer : 'Package1.dtsx'
+
+
 
 
 
