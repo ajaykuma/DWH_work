@@ -1,0 +1,23 @@
+#Task 2
+--copy package.dtsx as package2.dtsx in a different location
+--from SSIS packages > add existing packages  > point to your copy
+--test running it. (resolve if any connection mgr errors)
+
+#Task 3
+In previous package2> remove the connection between Flat File and OLE DB Destination
+--Source Assistant
+  SQL Server > New > DESKTOP-Q6Q9KGQ\SQLEXPRESS > mydb > (use Bank_full table)
+--Common > Derived column 
+   Derived column name: ageGroup
+   <add as new column>
+   Expression: age <= 50?"young":"old"
+   Derived column name: creattime
+   <add as new column>
+   Expression: @[System::CreationDate]
+--Ole DB Destination
+   Name of the table or view : New > Destination_Bankdata 
+   validate mappings <OK>
+
+   
+  
+  
