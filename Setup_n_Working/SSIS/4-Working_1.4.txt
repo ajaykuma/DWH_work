@@ -1,0 +1,62 @@
+--working with For Loop container
+
+--create a table that will allow us to watch for changes/track runs in our loop variable
+
+CREATE TABLE [dbo].[tblForLoopExample](
+	[LoopExampleKey] [int] PRIMARY KEY IDENTITY(1,1) NOT NULL,
+	ControlLoopVariableValue int,
+	[LastUpdated] [datetime] 
+)
+
+Now in new package > Package5.dtsx
+
+>create variable by clicking on variables in top right corner..
+Name: mycounter
+Scope: Package5
+Datatype: Int32
+Value: 0
+Expression: <empty>
+
+This variable will be used for our counter when we use with paramter mapping.
+Ee will use the For Loop Container to repeat an Execute SQL Task..
+
+Create an sql task > 
+connection: insert into dbo.tblForLoopExample values (?, getdate())
+Note** we can add multiple parameters supported by multiple variables
+
+Click on Parameter Mapping on the left side of the Execute SQL Task Editor to display the Parameter Mapping page of the 
+Execute SQL Task Editor. In the Variable Name column select User::mycounter (it should be at or near the bottom of the drop-down list).
+ Select Input as the Direction, Int32 as the Data Type, and enter 0 for the Parameter Name. We will leave
+ the Parameter Size at -1. 
+If more than one paramter then variable name changes and parameter name increments.
+
+<optional> we can test our query and check if it adds values to the table:
+insert into dbo.tblForLoopExample values (?, getdate())
+
+Now add 'For loop container' within data flow.
+Add execute sql task to 'for loop container'.
+
+edit for loop container properties to specify init, runs, and counter 
+InitExpression: @mycounter=0
+EvalExpression: @mycounter<10
+AssignExpression: @mycounter=@mycounter+1
+
+Run your container..
+
+After completion,run sql query from SSMS
+SELECT TOP (1000) [LoopExampleKey]
+      ,[ControlLoopVariableValue]
+      ,[LastUpdated]
+  FROM [mydb].[dbo].[tblForLoopExample]
+
+--------------------
+refer: <Package5.dtsx>
+
+
+
+
+
+
+
+
+
