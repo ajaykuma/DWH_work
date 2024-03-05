@@ -1,0 +1,42 @@
+--working with Aggregate
+
+refer: <Package7.dtsx>
+
+Data flow:
+OLE DB Source > Conditional split 
+ case 1: marital == "married"
+ case 2: marital != "married"
+
+Aggregate:
+Input Column           Output Alias             Operation
+(*)			Count_all		Count_All
+marital			marital			Group by
+y			y			Count distinct
+balance			balance			Average
+
+OLE DB Dest1
+Aggr_dt1
+CREATE TABLE [Aggr_dt1] (
+    [Count all] numeric(20,0),
+    [marital] varchar(50),
+    [y] bigint,
+    [balance] float
+)
+
+Aggregate2:
+Input Column           Output Alias             Operation
+(*)			Count_all		Count_All
+marital			marital			Group by
+y			y			Count distinct
+balance			balance			Average
+
+OLE DB Dest2
+Aggr_dt2
+CREATE TABLE [Aggr_dt2] (
+    [Count all] numeric(20,0),
+    [marital] varchar(50),
+    [y] bigint,
+    [balance] float
+)
+
+

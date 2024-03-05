@@ -1,27 +1,59 @@
---Using Merge or Merge Join, conditional split, sort, multicast and grouping data flows into groups.
---creating a control flow with 'sql for validation' > datflow1 > 'sql for validation' > dataflow2
+--Using Lookup
+----------------
+In SQL Server Integration Services, the lookup component is one of the most frequently used tools for data validation and completion. 
+The lookup component is provided as a means to virtually join one set of data to another to validate and/or retrieve missing values. 
 
-OLE DB Source- table> dbo.Bank_full (contains 45211 rows)
-OLE DB Source1- table> dbo.Bank_full5 (contains 45211 - rows that contain marital="married")
-sort both sources (as required by merge)
-Note** as part of merge we can choose selective columns from both inputs and rest can be ignored.
-OLE DB Destination > Destination_bank_merged
+The SSIS lookup cache selection will determine whether and how the distinct lookup values are cached during package execution(at runtime)
+, and this can afect result of lookup & performance of package.
 
-Group these into one group : group1 --> belongs to DF1 (in control flow)
 
-Now for Group2
-OLE DB Source > reading from Destination_bank_merged >
-Conditional split > case 1 : age <= 50 > Multicast > OLE DB Destination > mc_tbl1
-                                                   > OLE DB Destination > mc_tbl2
-                    case 2: age >= 51  > Flat file destination > C:\Users\Ajay\Desktop\Others\sampledata\Extracted_data.txt
-Group all in second group : group2 and copy it into a new data flow.
-Then delete from this dataflow.
-                             group2--> belongs to DF2 (in control flow)
 
-Now insert an 'execute sql task' for validation between DF1 and DF2
-execute sql task contains > select * from destination_bank_merged which was table populated with merged data in DF1.
+Step 1: Flat file connection manager > point to Bank_full.csv
+        Remember to change data type for columns such as age and balance to DT_I4
+	columns: all
+Step 2: Lookup transformation editor:
+        Cache Mode: Full Cache
+        Connection type: OLE DB connection manager
+<redirect rows to no match output>
+Step 3: connection > Use a table > dbo.Dest_Bank5 ( this is based on Bank_full.csv but has all data for marital="married" deleted)
+Step 4: columns > Available input columns : serNo < connected to>
+                  Available Lookup columns : serNo
+                  plus all columns selected.
 
-Test..
+Step 5: OLE DB Destination for No match output : Destination_Bank_nomatch
+        Sort (based on age descending) > Derived columns to add 2 columns to table containing matched data (ageGroup and creattime)
+        > Lookup match output > Destination_Bank_match
+
+Full cache: full cache mode will cause the lookup transformation to retrieve and store in SSIS cache the 
+entire set of data from the specified lookup location. As a result, the data flow in which the lookup 
+transformation resides will not start processing any data buffers until all of the rows from the lookup query have been cached in SSIS.
+
+Partial cache: When using the partial cache setting for the SSIS lookup cache mode, lookup values will still be cached, 
+but only as each distinct value is encountered in the data flow. Initially, each distinct value will be retrieved
+ individually from the specified source, and then cached. To be clear, this is a row-by-row lookup for each distinct key value(s).
+
+No cache:  no cache mode will not add any values to the lookup cache in SSIS. As a result, every single row in the pipeline 
+data set will require a query against the lookup source. Since no data is cached, it is possible to save a small amount of overhead 
+in SSIS memory in cases where key values are not reused
+
+
+Control Flow:
+    Data Flow: Flat File Source > Lookup > Lookup Match Output     > sort > derived colums > OLE DB Destination
+                                         > Lookup No Match Output  > OLE DB Destination
+
+Refer: <Package3.dtsx>
+
+--check tables.
+nomatch table contains data with marital == "married" which was deleted in dbo.Dest_Bank5 and did not match with file source.
+match table contains data for all columns as Null from flatfile source and data in lookup where matching happened.
+
+SELECT count(*)  FROM [mydb].[dbo].[Destination_Bank_match]
+select count(*) from mydb.dbo.Dest_Bank5
+select count(*) from mydb.dbo.Bank_full where marital !='married'
+
+
+
+
 
 
 

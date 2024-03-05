@@ -1,62 +1,29 @@
---working with For Loop container
+--Using Merge or Merge Join, conditional split, sort, multicast and grouping data flows into groups.
+--creating a control flow with 'sql for validation' > datflow1 > 'sql for validation' > dataflow2
 
---create a table that will allow us to watch for changes/track runs in our loop variable
+OLE DB Source- table> dbo.Bank_full (contains 45211 rows)
+OLE DB Source1- table> dbo.Bank_full5 (contains 45211 - rows that contain marital="married")
+sort both sources (as required by merge)
+Note** as part of merge we can choose selective columns from both inputs and rest can be ignored.
+OLE DB Destination > Destination_bank_merged
 
-CREATE TABLE [dbo].[tblForLoopExample](
-	[LoopExampleKey] [int] PRIMARY KEY IDENTITY(1,1) NOT NULL,
-	ControlLoopVariableValue int,
-	[LastUpdated] [datetime] 
-)
+Group these into one group : group1 --> belongs to DF1 (in control flow)
 
-Now in new package > Package5.dtsx
+Now for Group2
+OLE DB Source > reading from Destination_bank_merged >
+Conditional split > case 1 : age <= 50 > Multicast > OLE DB Destination > mc_tbl1
+                                                   > OLE DB Destination > mc_tbl2
+                    case 2: age >= 51  > Flat file destination > C:\Users\Ajay\Desktop\Others\sampledata\Extracted_data.txt
+Group all in second group : group2 and copy it into a new data flow.
+Then delete from this dataflow.
+                             group2--> belongs to DF2 (in control flow)
 
->create variable by clicking on variables in top right corner..
-Name: mycounter
-Scope: Package5
-Datatype: Int32
-Value: 0
-Expression: <empty>
+Now insert an 'execute sql task' for validation between DF1 and DF2
+execute sql task contains > select * from destination_bank_merged which was table populated with merged data in DF1.
 
-This variable will be used for our counter when we use with paramter mapping.
-Ee will use the For Loop Container to repeat an Execute SQL Task..
+Test..
 
-Create an sql task > 
-connection: insert into dbo.tblForLoopExample values (?, getdate())
-Note** we can add multiple parameters supported by multiple variables
-
-Click on Parameter Mapping on the left side of the Execute SQL Task Editor to display the Parameter Mapping page of the 
-Execute SQL Task Editor. In the Variable Name column select User::mycounter (it should be at or near the bottom of the drop-down list).
- Select Input as the Direction, Int32 as the Data Type, and enter 0 for the Parameter Name. We will leave
- the Parameter Size at -1. 
-If more than one paramter then variable name changes and parameter name increments.
-
-<optional> we can test our query and check if it adds values to the table:
-insert into dbo.tblForLoopExample values (?, getdate())
-
-Now add 'For loop container' within data flow.
-Add execute sql task to 'for loop container'.
-
-edit for loop container properties to specify init, runs, and counter 
-InitExpression: @mycounter=0
-EvalExpression: @mycounter<10
-AssignExpression: @mycounter=@mycounter+1
-
-Run your container..
-
-After completion,run sql query from SSMS
-SELECT TOP (1000) [LoopExampleKey]
-      ,[ControlLoopVariableValue]
-      ,[LastUpdated]
-  FROM [mydb].[dbo].[tblForLoopExample]
-
---------------------
-refer: <Package5.dtsx>
-
-
-
-
-
-
+refer: <Package4.dtsx>
 
 
 

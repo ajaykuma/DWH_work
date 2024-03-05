@@ -1,59 +1,31 @@
---Using Lookup
-----------------
-In SQL Server Integration Services, the lookup component is one of the most frequently used tools for data validation and completion. 
-The lookup component is provided as a means to virtually join one set of data to another to validate and/or retrieve missing values. 
+#Task 2
+--copy package.dtsx as package2.dtsx in a different location
+--from SSIS packages > add existing packages  > point to your copy
+--test running it. (resolve if any connection mgr errors)
 
-The SSIS lookup cache selection will determine whether and how the distinct lookup values are cached during package execution(at runtime)
-, and this can afect result of lookup & performance of package.
-
-
-
-Step 1: Flat file connection manager > point to Bank_full.csv
-        Remember to change data type for columns such as age and balance to DT_I4
-	columns: all
-Step 2: Lookup transformation editor:
-        Cache Mode: Full Cache
-        Connection type: OLE DB connection manager
-<redirect rows to no match output>
-Step 3: connection > Use a table > dbo.Dest_Bank5 ( this is based on Bank_full.csv but has all data for marital="married" deleted)
-Step 4: columns > Available input columns : serNo < connected to>
-                  Available Lookup columns : serNo
-                  plus all columns selected.
-
-Step 5: OLE DB Destination for No match output : Destination_Bank_nomatch
-        Sort (based on age descending) > Derived columns to add 2 columns to table containing matched data (ageGroup and creattime)
-        > Lookup match output > Destination_Bank_match
-
-Full cache: full cache mode will cause the lookup transformation to retrieve and store in SSIS cache the 
-entire set of data from the specified lookup location. As a result, the data flow in which the lookup 
-transformation resides will not start processing any data buffers until all of the rows from the lookup query have been cached in SSIS.
-
-Partial cache: When using the partial cache setting for the SSIS lookup cache mode, lookup values will still be cached, 
-but only as each distinct value is encountered in the data flow. Initially, each distinct value will be retrieved
- individually from the specified source, and then cached. To be clear, this is a row-by-row lookup for each distinct key value(s).
-
-No cache:  no cache mode will not add any values to the lookup cache in SSIS. As a result, every single row in the pipeline 
-data set will require a query against the lookup source. Since no data is cached, it is possible to save a small amount of overhead 
-in SSIS memory in cases where key values are not reused
-
+#Task 3
+In previous package2> remove the connection between Flat File and OLE DB Destination
+--Source Assistant
+  SQL Server > New > DESKTOP-Q6Q9KGQ\SQLEXPRESS > mydb > (use Bank_full table)
+--Common > Derived column 
+   Derived column name: ageGroup
+   <add as new column>
+   Expression: age <= 50?"young":"old"
+   Derived column name: creattime
+   <add as new column>
+   Expression: @[System::CreationDate]
+--Ole DB Destination
+   Name of the table or view : New > Destination_Bankdata 
+   validate mappings <OK>
 
 Control Flow:
-    Data Flow: Flat File Source > Lookup > Lookup Match Output     > sort > derived colums > OLE DB Destination
-                                         > Lookup No Match Output  > OLE DB Destination
+ Dataflow : OLE Db Source > Derived Column > Ole DB Destination
+ Execute SQL Task : select * from Destination_bank2
 
-Refer: <Package3.dtsx>
+<refer>: Package2.dtsx
 
---check tables.
-nomatch table contains data with marital == "married" which was deleted in dbo.Dest_Bank5 and did not match with file source.
-match table contains data for all columns as Null from flatfile source and data in lookup where matching happened.
+----------------
 
-SELECT count(*)  FROM [mydb].[dbo].[Destination_Bank_match]
-select count(*) from mydb.dbo.Dest_Bank5
-select count(*) from mydb.dbo.Bank_full where marital !='married'
-
-
-
-
-
-
-
+   
+  
+  

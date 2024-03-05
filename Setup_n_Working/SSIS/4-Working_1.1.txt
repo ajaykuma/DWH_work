@@ -1,31 +1,123 @@
-#Task 2
---copy package.dtsx as package2.dtsx in a different location
---from SSIS packages > add existing packages  > point to your copy
---test running it. (resolve if any connection mgr errors)
+Using Integration services project
+------------------
+--Start visual studio > create a new project > search and choose 'Integration services'
+Note** Similarly project with 'analysis services' &  'reporting services' can be created.
+--Project Name:
+--Location:
+--Solution name:
 
-#Task 3
-In previous package2> remove the connection between Flat File and OLE DB Destination
+--Look into Solution explorer(on right)
+Projects.params: 
+Connection Managers:(can have connection managers for project level i.e. all packages)
+Connection managers can be created at Package level.
+SSIS Packages:
+--Package.dtsx
+   --contains Control Flow > one or more data flow tasks
+
+Look into (on left)--when Data Flow tab is selected
+Favorites:
+--Destination Assistant
 --Source Assistant
-  SQL Server > New > DESKTOP-Q6Q9KGQ\SQLEXPRESS > mydb > (use Bank_full table)
---Common > Derived column 
-   Derived column name: ageGroup
-   <add as new column>
-   Expression: age <= 50?"young":"old"
-   Derived column name: creattime
-   <add as new column>
-   Expression: @[System::CreationDate]
---Ole DB Destination
-   Name of the table or view : New > Destination_Bankdata 
-   validate mappings <OK>
+Common: (for actions/transformations)
+Other Transforms (for transformations)
+Other Sources
+Other Destinations
+
+Look into (on left)  --when Control Flow is selected
+Favorites > 'data flow task', 'Execute SQL Task'-for tasks before/after/in parallel with DFT
+Common:
+Containers:
+Other Tasks
+====================================
+
+#Task 1:
+--------
+From SSIS >
+Click and check in Solution explorer.
+If solution explorer does not show up, then View> Solution explorer.
+
+Right click on Connection Managers > new connection manager > Flatfile > Add
+--point to your file > Bank_full.csv 
+--click on columns and validate mappings
+--Advanced option > if mapping/datatype needs to be changed .. > OK
+
+Similarly create new connection manager > OLE DB > provider : Native OLE DB\SQL Server Native Client 11.0
+--provide your database server name: DESKTOP-Q6Q9KGQ\SQLEXPRESS > select db name and Test connection > OK
+
+So we created two connection managers which can be used to read/write data as part of our data flows and in any package.
+
+If no packages show up as 'Package.dtsx', then right click on SSIS Packages > new SSIS Package
+Click on control flow and it shows 2 connection managers.
+--we can click on Connection Managers box and create new connection manager which would be package specific
+
+right click > new 'add ssis connection manager' > oledb > point to AdventureWorksDB (if already setup) > OK
+
+Now click on 'Data Flow' to create new data flow.
+we can now use 'Other Sources' [example: Flat File Source, OLE DB Source] to get data and we can use our already existing 'connection managers'.
+we can also directly use 'Source or Destination Assistant' to create sources to get data.
+
+Step1: --Use existing connection manager and create a source to read 'Bank_full.csv' ie use 'Flat File Source' and double click to 
+         configure/edit its properties.
+Step2: --Use OLE DB Destination to send data into a database. Connect Flat File to Ole DB Destination.
+Step3: configure OLE DB Destination to point to a new table. (Destination_bank1) [with allowing nulls, identity]
+
+Click on control flow and add an 'Execute SQL Task' followed by your 'Data Flow Task'.
+edit 'Execute SQL Task' > 
+connection: select mydb* connection manager
+SQLStatement: select * from <table_name>
+change 'ByPassPrepare': true to False and test Parse Query.
+
+<save>
+
+run the control flow.
+--check in Progress tab to look at flow.
+--Look into putput section for log output.
+
+Right-click on the control flow area, and it gives you a list of options.
+Click on Logging, and it opens Configure SSIS Logs window.
+
+In the bottom message bar, it gives a message ‘to configure unique logging options, we need to enable logging for it in the tree view’.
+Put a tick in the project checkbox and it enables the logging for this SSIS package.
+
+then we need to configure - Provider and Logs and details
+
+SSIS log provider for Text files: We use this log provider to store information in a TXT or CSV format. 
+Usually, developers use this format to store logs information
+SSIS log provider for SQL Server: We can store the SSIS logs in the database tables. 
+It makes it easy to query the logs using the t-SQL queries
+SSIS log provider for Windows Event log: We can use this log provider to send information in the application event viewer. 
+The source name for these events is SQLISPackage110. We do not require any separate configuration to use this provider
+SSIS log provider for SQL Server Profiler: DBA usually use SQL Profiler to log queries and investigate issues in SQL Server.
+ We can use this log provider to produce a SQL profiler trace. We can specify a .trc extension to open it with SQL profiler 
+and view the package execution systematically
+SSIS log provider for XML files: This log provider stores the package logs in the XML files. 
+We can configure the XML files and open the logs in tools such as browser, notepad or Visual Studio
+
+>SSIS Log provider for TextFiles > create file (provide a path)
+
+Test it..
 
 Control Flow:
- Dataflow : OLE Db Source > Derived Column > Ole DB Destination
- Execute SQL Task : select * from Destination_bank2
+ Dataflow : Flat File Source >  OLE DB Destination
+ Execute SQL Task : select * from Destination_bank1
 
-<refer>: Package2.dtsx
+refer : 'Package1.dtsx'
 
-----------------
 
-   
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

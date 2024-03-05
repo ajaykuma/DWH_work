@@ -11,8 +11,8 @@
   DTS:LocaleID="1033"
   DTS:ObjectName="Package5"
   DTS:PackageType="5"
-  DTS:VersionBuild="15"
-  DTS:VersionGUID="{374F3AE3-02D4-4BDD-B48C-B73ECE8DB7B3}">
+  DTS:VersionBuild="20"
+  DTS:VersionGUID="{5D95C326-4015-4601-A6E3-D5663451E26F}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:Variables>
@@ -30,29 +30,12 @@
   </DTS:Variables>
   <DTS:Executables>
     <DTS:Executable
-      DTS:refId="Package\Execute SQL Task 1"
-      DTS:CreationName="Microsoft.ExecuteSQLTask"
-      DTS:Description="Execute SQL Task"
-      DTS:DTSID="{C895A16D-46D9-495E-967B-E0DD798C4C90}"
-      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
-      DTS:LocaleID="-1"
-      DTS:ObjectName="Execute SQL Task 1"
-      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2022; © 2022 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
-      DTS:ThreadHint="0">
-      <DTS:Variables />
-      <DTS:ObjectData>
-        <SQLTask:SqlTaskData
-          SQLTask:Connection="{CF089345-D23E-4AF6-B102-BE3F57A9530D}"
-          SQLTask:SqlStatementSource="delete from [mydb].[dbo].[tblForLoopExample]" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
-      </DTS:ObjectData>
-    </DTS:Executable>
-    <DTS:Executable
       DTS:refId="Package\For Loop Container"
       DTS:AssignExpression="@mycounter=@mycounter+1"
       DTS:CreationName="STOCK:FORLOOP"
       DTS:Description="For Loop Container"
       DTS:DTSID="{7A66703F-72CE-491A-891D-F16F253B0EDE}"
-      DTS:EvalExpression="@mycounter&lt;10"
+      DTS:EvalExpression="@mycounter&lt;5"
       DTS:ExecutableType="STOCK:FORLOOP"
       DTS:InitExpression="@mycounter=0"
       DTS:LocaleID="-1"
@@ -87,16 +70,6 @@
       </DTS:Executables>
     </DTS:Executable>
   </DTS:Executables>
-  <DTS:PrecedenceConstraints>
-    <DTS:PrecedenceConstraint
-      DTS:refId="Package.PrecedenceConstraints[Constraint]"
-      DTS:CreationName=""
-      DTS:DTSID="{06C9C3F6-5796-4C01-862C-6D2A22376B67}"
-      DTS:From="Package\For Loop Container"
-      DTS:LogicalAnd="True"
-      DTS:ObjectName="Constraint"
-      DTS:To="Package\Execute SQL Task 1" />
-  </DTS:PrecedenceConstraints>
   <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
 <!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
 <!--If you manually edit this section and make a mistake, you can delete it. -->
@@ -108,50 +81,18 @@
     design-time-name="Package">
     <LayoutInfo>
       <GraphLayout
-        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph">
         <NodeLayout
           Size="164,42.6666666666667"
           Id="Package\For Loop Container\Execute SQL Task"
-          TopLeft="27.0416633418452,0.216659630934629" />
+          TopLeft="28.9166632580262,30.1166582051916" />
         <ContainerLayout
           HeaderHeight="43"
           IsExpanded="True"
-          PanelSize="205.333333333334,97.3333333333334"
-          Size="205.333333333334,140.666666666667"
+          PanelSize="205.333333333334,128"
+          Size="205.333333333334,170.666666666667"
           Id="Package\For Loop Container"
-          TopLeft="181.249991897494,96.8499953818323" />
-        <NodeLayout
-          Size="164,42.6666666666667"
-          Id="Package\Execute SQL Task 1"
-          TopLeft="191.249991450459,257.399987726212" />
-        <EdgeLayout
-          Id="Package.PrecedenceConstraints[Constraint]"
-          TopLeft="283.91665856416,237.516662048499">
-          <EdgeLayout.Curve>
-            <mssgle:Curve
-              StartConnector="{assembly:Null}"
-              EndConnector="71.3333328862986,41.2166590110464"
-              Start="0,0"
-              End="63.8333328862986,41.2166590110464">
-              <mssgle:Curve.Segments>
-                <mssgle:SegmentCollection
-                  Capacity="5">
-                  <mssgle:LineSegment
-                    End="0,37.2166590110464" />
-                  <mssgle:CubicBezierSegment
-                    Point1="0,37.2166590110464"
-                    Point2="0,41.2166590110464"
-                    Point3="4,41.2166590110464" />
-                  <mssgle:LineSegment
-                    End="63.8333328862986,41.2166590110464" />
-                </mssgle:SegmentCollection>
-              </mssgle:Curve.Segments>
-            </mssgle:Curve>
-          </EdgeLayout.Curve>
-          <EdgeLayout.Labels>
-            <EdgeLabelCollection />
-          </EdgeLayout.Labels>
-        </EdgeLayout>
+          TopLeft="73.7499967031183,46.1499977993966" />
       </GraphLayout>
     </LayoutInfo>
   </Package>

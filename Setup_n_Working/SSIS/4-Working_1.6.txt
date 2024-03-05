@@ -1,0 +1,54 @@
+--working with For BDD
+Balanced Data Distributor is a transform tool that takes 
+a single input and distributes the incoming rows to one or more outputs uniformly via multithreading.
+
+When using BDD, it is recommended that all outputs be identical because if one output contains a transformation, 
+it will affect the performance of all outputs. Having the same transformation components on each output will improve the performance.
+
+Before deciding to use BDD, there are several things you should check:
+
+The destination supports parallelism: if you are importing data to one destination table, BDD may be useless. 
+However, if you are importing data to a staging database, it may improve the data import performance.
+
+Machine resources: The SSIS package must be executed on a multi-processor and multi-core server.
+
+A large amount of data: This tool is useless when handling small amounts of data.
+
+Ordering is not required: SSIS Balanced Data Distributor is used when data ordering is ignored since data is 
+distributed without any consideration of row order.
+
+No configuration needed.
+
+
+Data Flow: OLE DB Source > BDD > Flat File dest1> C:\Users\Ajay\Desktop\Others\sampledata\BDD1.txt
+                                 Flat File dest2> C:\Users\Ajay\Desktop\Others\sampledata\BDD2.txt
+				 Flat File dest3> C:\Users\Ajay\Desktop\Others\sampledata\BDD3.txt
+
+refer: <Package6.dtsx>
+
+Note**
+After checking the number of rows distributed in each output, we see that the first two outputs contain X rows while 
+the third one contains only N rows .
+This behavior is due to the data flow task DefaultBufferMaxRows and DefaultBufferSize properties.
+Since the number of rows X is less than the DefaultBufferMaxRows property (10,000), this means that the size of the row has 
+reached the DefaultBufferSize value. To change this behavior, we can change the DefaultMaxRows accordingly and re-execute this package.
+
+Other alternatives are:
+conditional split or script component.
+Note**alternatives require that the data contains a row number column or it must be generated using a script component.
+
+For example:
+conditional split:
+To split a single input into multiple outputs, you can add a conditional split, then add an expression for each output where you use a modulo operator to split rows using the following expression pattern:
+
+[IdentityColumn] % <number of outputs needed> == <output number (zero based)>
+
+As an example, if you need to split one input into 5 outputs then you must add the following expressions within the conditional split:
+
+[IdentityColumn] % 5 == 0
+[IdentityColumn] % 5 == 1
+[IdentityColumn] % 5 == 2
+[IdentityColumn] % 5 == 3
+[IdentityColumn] % 5 == 4
+
+
