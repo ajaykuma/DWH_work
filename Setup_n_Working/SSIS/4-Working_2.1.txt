@@ -1,0 +1,38 @@
+--Loading only new files in SSIS
+
+Store the files processed to a tbl_log table and before loading any further
+ file we check i fthe file is already loaded then we don't load it again..
+
+
+Step 1: create 3 variables
+FilePath: point to Customer_1.csv
+RecordsLoaded: 
+IsFileAlreadyLoaded: (if file is not loaded then value would be 0 or would be non-zero)
+
+Step 2: create new package > control flow > add 'execute sql task' < contains sql from CreateTable file.
+Step 3: Add 'Foreach Loop Container' > Collection > Foreach File Enumerator
+        C:\Users\Ajay\Desktop\Others\sampledata
+        *.CSV
+        Add mappings : point to FilePath
+Step 4: Add dataflow into 'foreach loop container'
+Step 5: Open dataflow > add flatfile and point to 1st CSV ie Customer_1.csv
+Step 6: Add Row count and select 'RecordsLoaded' variable.
+
+--check connection manager used in data flow> connection strings > points to @[User::FilePath]
+Step 7: in Control flow, add 'execute sql path'
+
+insert into tbl_logs
+select 'File loaded', 'file name', 100, getdate()
+
+SQLStatementSource:
+"insert into tbl_logs
+select 'File loaded', " +@[User::FilePath]+ ","+ (DT_WSTR,12)@[User::RecordsLoaded] +", getdate()"
+
+>evaluate expression..
+
+refer: Package9.dtsx
+
+
+
+
+

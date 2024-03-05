@@ -1,0 +1,31 @@
+--incremental load scenario
+
+drop audit_log and recreate it with RecordsDeleted column.
+
+--for example
+IF  not EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[audit_log]') AND type in (N'U'))
+create table audit_log(Id int identity, 
+PackageName varchar(200), 
+TableName varchar(200), 
+RecordsInserted int, 
+RecordsUpdated int,
+RecordsDeleted int,
+Dated datetime)
+go
+
+--we can delete data based on Id column which was used for updated/inserted etc..
+--create new table as mentioned in CreateTable file
+
+  ZZ_Emails_deleted
+
+--Now we need input coming from flat file source which already goes into lookup.
+So we can use multicast and send one copy of output to new OLE DB Destination..pointing to zz_deleted
+
+--take the update statement
+  update in 'execute sql statement' after data flow
+
+--test
+
+refer<Package10>
+
+
