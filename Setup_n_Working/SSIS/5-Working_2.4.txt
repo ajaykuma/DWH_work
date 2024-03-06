@@ -1,0 +1,177 @@
+Understanding CDC
+-------------
+The CDC Control task is used to control the life cycle of change data capture (CDC) packages. 
+It handles CDC package synchronization with the initial load package, 
+the management of Log Sequence Number (LSN) ranges that are processed in a run of a CDC package. 
+and deals with error scenarios and recovery. 
+
+The log sequence number (LSN) value is a three-part, uniquely incrementing value. It is used for maintaining the sequence 
+of the transaction log records in the database. This allows SQL Server to maintain the ACID properties and to perform appropriate recovery actions.
+Starting from SQL Server 2012, Microsoft goes further in its approach and introduced 3 main components to use the CDC directly in SSIS:
+
+A CDC Control Task: managing the life cycle of CDC packages, and in particular all the mechanics of LSNs. 
+A Source CDC:  reads the information from a data capture exchange table
+A CDC Splitter: redirects the rows according to whether they need to be inserted, updated, or deleted.
+
+At Data flow level:
+Other sources : CDC Source
+Other transforms: CDC Splitter
+
+At Control flow level:
+CDC Control Task
+
+--Setup Change Data Capture on the source database
+If doing in SQL server:
+-----------
+EXEC sp_changedbowner 'sa'
+
+/* Activate the CDC */
+EXEC sp_cdc_enable_db
+
+/* Verify if the CDC is activated */
+SELECT name, is_cdc_enabled
+FROM sys.databases
+WHERE name LIKE 'mydb'
+
+/* Parametrize the CDC for the table dbo.Bank_full  */
+EXEC sys.sp_cdc_enable_table
+@source_schema = N'dbo'
+, @source_name = N'Bank_full'
+, @role_name = NULL
+, @supports_net_changes = 1
+
+----------
+--Make sure that SQL Server Agent is running as a SQL Server Agent Job is used to capture CDC data.
+A CDC Control Task: managing the life cycle of CDC packages is a control flow task to 
+implement the change data capture working with the CDC enabled databases and tables.
+
+it enables the SSIS package to use CDC change set
+it applies the transfer of data as required, and finally
+it marks the change set as accomplished, or in case of an error it retains the change set for further analysis.
+ The CDC Control Task holds the state of CDC into a package variable (defined when configuring the component), 
+used later in CDC Data Flow components.
+
+--Drag and drop a CDC Control Task into the package.
+--Set a connection manager (ADO.NET Connection Manager) to the source database.
+   <create connection to your database: mydb>
+--Set CDC Control Operation as: Mark CDC Start
+	Mark initial load start
+--Set a variable of type string for CDC State.
+        User::CDC_State
+--Set the connection for the database contains state data.
+	<connection manager>
+--Set the table for storing CDC state. You can create a new table here if you don’t have any table 
+         <cdc_states>
+
+CREATE TABLE [dbo].[cdc_states]
+([name] [nvarchar](256) NOT NULL,
+ [state] [nvarchar](256) NOT NULL) ON [PRIMARY]
+GO
+CREATE UNIQUE NONCLUSTERED INDEX [cdc_states_name] ON
+ [dbo].[cdc_states]
+ ( [name] ASC )
+ WITH (PAD_INDEX  = OFF) ON [PRIMARY]
+GO
+
+
+Actually since we didn’t set any actions for the change set, no data will be transferred.
+The aim of this task is to set the CDC state in cdc_states table.
+Note that this task with the above configuration needs to be run one and only once.
+
+If we query the cdc_states table, we can see that the state has a timestamp portion showing the data and time of the state storage.
+
+By definition, this state represents the state of table stored so the SSIS can recognize the very first state 
+of the Change Data Capture, and get the range of changes afterwards
+
+select * from cdc_states
+
+We will disable the task, as we don’t want to run it again.
+
+> Working with the Range of changes with CDC Control Task
+
+The next step is creating two CDC control tasks: one for getting the range and the other for marking it. 
+To better explain it, we need to retrieve the range of data that has updates and then mark it as processed.
+
+Step 1: We need to create a new CDC Control Task and configure it exactly 
+as we did for the CDC Control Task – Start, with changing the CDC control operation as “Get Processing Range”.
+
+--rest details same as before..
+
+Step 2:
+We need to create another CDC Control task same as previous one and set the CDC control operation as Mark Processed.
+
+Step 3:
+We need to place a Data Flow Task between these two tasks. We will leave the data flow empty as we should fill it in the next stage. 
+The aim of using the Data Flow is to read the change set and execute the appropriate action
+ based on the ETL load actions (delete, insert, or update)
+
+
+CDC control task - Get the range
+Data flow
+CDC control task - Process the range
+
+Step 4:  ( as part of df)
+Reading the Changed Set with CDC Source and CDC Splitter
+In the data flow task we have to read the changed set with the help of CDC change set table, 
+CDC data flow components (CDC Source, and CDC Splitter), and CDC state (stored by CDC Control Tasks). 
+CDC Source is a component that read the change set and provide it as the main output so it can be used 
+for CDC splitter. 
+CDC Splitter split the change set into three data set: 
+Inserted, Deleted, and Updated outputs. 
+For this example, I’ve used a stage table as the destination of this step to be able to write result 
+sets into it. my state table is exactly same as the source table plus single column for Status. 
+I’ll fill the status column in Derived Column depends on the change happened on the data row.
+
+Moving to the data flow task, we need to read the changed set using :
+
+the CDC change set table
+the CDC data flow components (CDC Source, and CDC Splitter)
+the CDC state (stored by CDC Control Tasks)
+The CDC Source reads the change set and supply it as the input which will be used by the CDC Splitter
+
+The CDC Splitter splits the change set into 3 branchs: Inserted - Updated - Deleted
+
+>>CDC Source
+Create a CDC Source component in the data flow.
+Set ADO.NET connection manager to the source database which has CDC enabled.
+Set CDC enabled table name
+Verify the CDC processing mode to be Net :  the CDC processing mode is set to Net in order to capture 
+the net changes rather than capturing all records
+Set CDC state variable the same variable that we’ve used in CDC Control Tasks.
+
+CDC Source:
+Connection manager:
+CDC enabled table:
+Capture instance: 
+CDC processing mode:Net
+Variable containing CDC state
+
+>> CDC Splitter
+After that, we created a CDC Splitter component after the CDC Source. (it doesn’t require any configuration, 
+we need just to connect the CDC source to it)
+
+We need to create a Derived Column transformation and connect InsertOutput/ UpdateOutput/ DeleteOutput of the CDC Splitter to it.
+
+In each one of it, we need to create a Status Column in Derived Column and set its value as :
+
+0 for InsertOutput
+1 for UpdateOutput
+2 for DeleteOutput
+
+For derived column >
+Status : expression 0
+Status : expression 1
+Status : expression 2
+
+
+Then we use a Union All transformation to integrate all three data outputs together, 
+so we can load them into the staging table using an OLE DB Destination.
+
+if we may encounter Data conversion issues between the source and the destination, we use a Data Conversion component.
+
+--
+
+
+
+
+

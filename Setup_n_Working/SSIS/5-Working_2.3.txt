@@ -1,0 +1,81 @@
+--
+Using CDC where SQL server tracks which rows in source have changed.
+Pros:
+Tracks changes to data
+Only read rows which have changed.
+Easy to determine create/update/delete actions.
+
+Cons:
+Only works with sql server
+requires setup work in database and tables 
+must have ability to alter the source system.
+
+Change data capture cannot function properly when the Database Engine service or the SQL Server Agent service is running under 
+the NETWORK SERVICE account. This can result in error 22832.
+
+0)       CDC Can not be enabled when Transactional Replication is on, must turn off, enable CDC then reapply Transactional Replication
+1)       Source is the SQL Server Transaction Log
+2)       Log file serves as the Input to the Capture Process
+3)       Commands
+ a.       EXEC sp_changedbowner 'dbo' or 'sa'
+ b.       EXEC sys.sp_cdc_enable_db / EXEC sys.sp_cdc_disable_db
+ c.       EXEC sys.sp_cdc_enable_table /
+ d.       EXEC sys.sp_cdc_help_change_data_capture -- view the cdc tables
+ e.       SELECT name, is_cdc_enabled FROM sys.databases
+ 4) To SELECT a table you must use the cdc schema such as cdc.SCHEMANAME_TABLENAME_CT and its suffixed with CT
+
+5)       Columns
+ a.       _$start_lsn -- commit log sequence number (LSN) within the same Transaction
+ b.       _$end_lsn -
+ c.       _$seqval -- order changes within a transaction
+ d.       _$operation -- 1=delete, 2=insert,3=updatebefore,4=updateafter
+ e.       _$update_mask -- for insert,delete all bits are set, for update bits set correspond to columns changed
+
+6) Note CDC creates SQL Agent Jobs to move log entries to the CDC tables, there is a latency
+7) There is a moving window of data kept, the default is 3 days.
+8) At most 2 capture instances per table
+
+--Change data capture is only available in the Enterprise, Developer, Enterprise Evaluation, and Standard editions.
+--If using developer edition
+use mydb
+go
+
+EXEC sp_changedbowner 'sa'
+EXEC sys.sp_cdc_enable_db
+EXEC sys.sp_cdc_help_change_data_capture
+SELECT name, is_cdc_enabled FROM sys.databases
+
+--if working with AdventureWorks2019
+use AdventureWorks2019
+go
+
+EXEC sys.sp_cdc_enable_db
+EXEC sys.sp_cdc_help_change_data_capture
+SELECT name, is_cdc_enabled FROM sys.databases
+
+EXEC sys.sp_cdc_enable_table
+    @source_schema = N'Person'
+  , @source_name = N'Address'
+  , @role_name = NULL
+--  , @capture_instance = N'Address' --when giving specific instance name
+  , @capture_instance = NULL --Null signifies the new CDC table name 
+  , @supports_net_changes = 1 --if column changes freq, it will only do the net changes
+  , @captured_column_list = N'AddressID, AddressLine1, City'
+  , @filegroup_name = N'PRIMARY';
+GO
+
+INSERT INTO AdventureWorks2019.Person.Address
+           (AddressLine1,AddressLine2,City,StateProvinceID,PostalCode,SpatialLocation,rowguid,ModifiedDate)
+VALUES
+     ('188 Football Avenue', 'Suite 188', 'Seattle', 10, '80230', NULL, NEWID(), GETDATE());
+
+SELECT TOP 1 * FROM Person.Address ORDER BY AddressID DESC
+
+UPDATE Person.Address SET AddressLine1 = '199 Football Ave' WHERE AddressID = 32524
+
+DELETE FROM Person.Address WHERE AddressID = 32524
+
+SELECT * FROM cdc.change_tables
+
+SELECT * FROM cdc.Person_Address_CT ORDER BY __$start_lsn DESC
+

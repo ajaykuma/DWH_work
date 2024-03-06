@@ -1,0 +1,42 @@
+Schedule job in SSIS/Run
+----------
+SQL Agent server is the service that runs scheduled admin tasks > jobs
+--Start SQL Server agent service/ enable (if not enabled)
+
+right click on jobs > new job > dailyrun1_24
+Steps> 
+name: run ssis package
+Type: SSIS
+Package source: File System
+right click on page > copy full path
+
+<ok>
+
+Schedules > new
+Name: run daily
+Schedule type: Recurring
+Frequency :
+<ok>
+
+
+--to check/debug
+right click on server job and view history
+
+====================
+Deploy package:
+expand IIS catalogs
+
+right click on project > deploy > sql server name > destination: new folder [new_pkg] > ok > next > deploy...
+
+sql server agent > new job > 
+step name: package_execution
+Type: SSIS package
+Package source: SSIS catalog
+<server instance name>
+--select packae to execute
+
+
+optional: schedules...
+
+Look into reports from SSIS > reports > all details..
+

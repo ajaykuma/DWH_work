@@ -11,6 +11,9 @@ or
 
 https://www.microsoft.com/en-us/download/details.aspx?id=55994&quot
 
+or get DEVELOPER EDITION
+https://go.microsoft.com/fwlink/?linkid=866662
+
 #Driver needed to connect to DB server
 Download microsoft odbc driver 17 for sql server 
 https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver16

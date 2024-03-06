@@ -4,7 +4,7 @@ UPDATE a
       ,a.[Last_name] = b.Last_name
       ,a.[Email] = b.Email
       ,a.[Gender] = b.Gender
- from [dbo].[Emails] a inner join [dbo].[ZZ_Emails_updated] as b
+ from [dbo].[Emails] a inner join [dbo].[ZZ_Email_updated] as b
  on a.Id = b.Id
 set @updated = @@ROWCOUNT
 delete a from Emails a where a.Id not in (select Id from [dbo].[ZZ_Emails_deleted])
