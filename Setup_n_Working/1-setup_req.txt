@@ -11,8 +11,13 @@ or
 
 https://www.microsoft.com/en-us/download/details.aspx?id=55994&quot
 
+PREFERABLY*******
 or get DEVELOPER EDITION
 https://go.microsoft.com/fwlink/?linkid=866662
+
+After installation, click on customize and add features such as 'integration services', 'analysis services'
+to installation, which will set these services for advance usage options such deploy packages into ssis catalog.
+
 
 #Driver needed to connect to DB server
 Download microsoft odbc driver 17 for sql server 

@@ -5,33 +5,45 @@
   DTS:CreationName="Microsoft.Package"
   DTS:CreatorComputerName="DESKTOP-Q6Q9KGQ"
   DTS:CreatorName="DESKTOP-Q6Q9KGQ\Ajay"
-  DTS:DTSID="{8B5FACFB-A515-4804-8105-4627D59B6CB3}"
+  DTS:DTSID="{0CCEB0B3-3957-45C3-8637-2490607B50E7}"
   DTS:ExecutableType="Microsoft.Package"
-  DTS:LastModifiedProductVersion="16.0.5397.1"
+  DTS:LastModifiedProductVersion="16.0.5270.0"
   DTS:LocaleID="1033"
   DTS:ObjectName="Package1"
   DTS:PackageType="5"
-  DTS:VersionBuild="23"
-  DTS:VersionGUID="{08EA87B0-C01B-4BE7-9ED9-EFB388DC3882}">
+  DTS:VersionBuild="24"
+  DTS:VersionGUID="{9F7BC8C9-4DEC-42F9-A65B-FB9AEE5156B0}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
     <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[DESKTOP-Q6Q9KGQ.mydb1]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{BD8402FB-DB86-4AEB-8F11-8DB3EC2BCFE5}"
+      DTS:ObjectName="DESKTOP-Q6Q9KGQ.mydb1">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=DESKTOP-Q6Q9KGQ;Initial Catalog=mydb;Provider=SQLNCLI11.1;Integrated Security=SSPI;Application Name=SSIS-Package1-{BD8402FB-DB86-4AEB-8F11-8DB3EC2BCFE5}DESKTOP-Q6Q9KGQ.mydb1;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[DESKTOP-Q6Q9KGQ\SQLEXPRESS.AdventureWorks2017]"
       DTS:CreationName="OLEDB"
-      DTS:DTSID="{DCEE15E2-2621-4451-AA4D-2DCE19EA7D5D}"
+      DTS:DTSID="{7062C197-4113-46A2-A33C-89F25187F941}"
       DTS:ObjectName="DESKTOP-Q6Q9KGQ\SQLEXPRESS.AdventureWorks2017">
       <DTS:ObjectData>
         <DTS:ConnectionManager
           DTS:ConnectRetryCount="1"
           DTS:ConnectRetryInterval="5"
-          DTS:ConnectionString="Data Source=DESKTOP-Q6Q9KGQ\SQLEXPRESS;Initial Catalog=AdventureWorks2017;Provider=SQLNCLI11.1;Integrated Security=SSPI;Application Name=SSIS-Package1-{DCEE15E2-2621-4451-AA4D-2DCE19EA7D5D}DESKTOP-Q6Q9KGQ\SQLEXPRESS.AdventureWorks2017;Auto Translate=False;" />
+          DTS:ConnectionString="Data Source=DESKTOP-Q6Q9KGQ\SQLEXPRESS;Initial Catalog=AdventureWorks2017;Provider=SQLNCLI11.1;Integrated Security=SSPI;Application Name=SSIS-Package1-{7062C197-4113-46A2-A33C-89F25187F941}DESKTOP-Q6Q9KGQ\SQLEXPRESS.AdventureWorks2017;Auto Translate=False;" />
       </DTS:ObjectData>
     </DTS:ConnectionManager>
     <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[Excel Connection Manager]"
       DTS:CreationName="EXCEL"
-      DTS:DTSID="{7C8F8F24-30FD-45C8-A0E6-C9BD53A0AE8B}"
+      DTS:DTSID="{791E451B-2C2D-4FC4-ADA9-D2EBC8B91BD6}"
       DTS:ObjectName="Excel Connection Manager">
       <DTS:ObjectData>
         <DTS:ConnectionManager
@@ -43,7 +55,7 @@
     <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[Excel Connection Manager 1]"
       DTS:CreationName="EXCEL"
-      DTS:DTSID="{001D42B6-387D-4CC0-9FA4-2CD4C1FFBB01}"
+      DTS:DTSID="{58CA66F6-0230-479B-BC43-834DD742FCA4}"
       DTS:ObjectName="Excel Connection Manager 1">
       <DTS:ObjectData>
         <DTS:ConnectionManager
@@ -53,9 +65,191 @@
       </DTS:ObjectData>
     </DTS:ConnectionManager>
     <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Flat File Connection Manager]"
+      DTS:CreationName="FLATFILE"
+      DTS:DTSID="{ED7460D1-8529-470A-A276-CF8FA9665FD7}"
+      DTS:ObjectName="Flat File Connection Manager">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:Format="Delimited"
+          DTS:LocaleID="1033"
+          DTS:HeaderRowDelimiter="_x000D__x000A_"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter=""
+          DTS:TextQualifier="_x003C_none_x003E_"
+          DTS:CodePage="1252"
+          DTS:ConnectionString="D:\GitContent\Datasets\Datasets_For_Work\Bank_full.csv">
+          <DTS:FlatFileColumns>
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="serNo"
+              DTS:DTSID="{6AA36E44-80E4-48E2-93B7-BBC4C357A2A4}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="age"
+              DTS:DTSID="{456F05DD-AD2B-4F90-ACB6-569627FDE709}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="job"
+              DTS:DTSID="{979B21EB-3EB6-40F3-AA3B-FB45417A244C}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="marital"
+              DTS:DTSID="{724A4084-2A43-4213-A770-CB02C65CA4AD}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="education"
+              DTS:DTSID="{DBEABE33-D791-48E9-850A-E2E9119B6816}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="defaulter"
+              DTS:DTSID="{514AEE22-DAC4-45EB-9F91-67B54CBF1388}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="balance"
+              DTS:DTSID="{4A6DD9F3-E629-45CD-BB85-537F75355E4C}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="housing"
+              DTS:DTSID="{25E4CF52-588D-4155-BCA0-400B04F26230}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="loan"
+              DTS:DTSID="{534F377D-48A8-482C-A5D8-0E0C224EAEA1}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="contact"
+              DTS:DTSID="{73BCC245-2502-4776-BE49-5F76908A2690}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="day"
+              DTS:DTSID="{9F6C4C3F-37A2-4A3E-9177-A65B82495181}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="month"
+              DTS:DTSID="{38D5DB85-445C-4879-8F45-F6428EF82A98}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="duration"
+              DTS:DTSID="{0DA8D9E8-A761-420A-8948-CE0D67D78384}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="campaign"
+              DTS:DTSID="{0641FB9D-A5CB-4FE7-85D7-5D38F353847D}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="pdays"
+              DTS:DTSID="{6CB6079A-7689-413A-BFDA-982BB9EEA671}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="previous"
+              DTS:DTSID="{49518718-4604-4FC6-99B4-907AD4EFDE21}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x002C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="poutcome"
+              DTS:DTSID="{2DAB96AC-B8AF-4D21-A1FE-A911478F3F45}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x000D__x000A_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="y"
+              DTS:DTSID="{7DC12C7A-4E84-4A6B-9F1E-91E8A93A2C4E}"
+              DTS:CreationName="" />
+          </DTS:FlatFileColumns>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[oput1.txt]"
       DTS:CreationName="FILE"
-      DTS:DTSID="{4692813A-C0F8-4201-98FF-469E736983A6}"
+      DTS:DTSID="{2B5E5E03-078C-402A-AAFD-493A81BAD88E}"
       DTS:ObjectName="oput1.txt">
       <DTS:ObjectData>
         <DTS:ConnectionManager
@@ -66,7 +260,7 @@
     <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[output1]"
       DTS:CreationName="FILE"
-      DTS:DTSID="{D9DAFDDE-05FF-4387-9CCB-8B183F34AEF8}"
+      DTS:DTSID="{B59EBD76-D2BC-44C4-9E45-23ED6DA4613E}"
       DTS:ObjectName="output1">
       <DTS:ObjectData>
         <DTS:ConnectionManager
@@ -80,7 +274,7 @@
       DTS:ConfigString="oput1.txt"
       DTS:CreationName="Microsoft.LogProviderTextFile"
       DTS:Description="Writes log entries for events to a CSV file"
-      DTS:DTSID="{884F98C6-9D94-4DAE-8D4A-2746C1F28561}"
+      DTS:DTSID="{6503206E-4952-4906-9E21-17BEAF375D79}"
       DTS:ObjectName="SSIS log provider for Text files">
       <DTS:ObjectData>
         <InnerObject />
@@ -132,7 +326,7 @@
     </DTS:Property>
     <DTS:SelectedLogProviders>
       <DTS:SelectedLogProvider
-        DTS:InstanceID="{884F98C6-9D94-4DAE-8D4A-2746C1F28561}" />
+        DTS:InstanceID="{6503206E-4952-4906-9E21-17BEAF375D79}" />
     </DTS:SelectedLogProviders>
   </DTS:LoggingOptions>
   <DTS:Executables>
@@ -140,7 +334,7 @@
       DTS:refId="Package\Data Flow Task"
       DTS:CreationName="Microsoft.Pipeline"
       DTS:Description="Data Flow Task"
-      DTS:DTSID="{FCA20759-96CC-410B-BC97-107043683E16}"
+      DTS:DTSID="{5C02865B-DEF2-4817-B890-A09AACAF7877}"
       DTS:ExecutableType="Microsoft.Pipeline"
       DTS:LocaleID="-1"
       DTS:ObjectName="Data Flow Task">
@@ -171,7 +365,7 @@
         </DTS:Property>
         <DTS:SelectedLogProviders>
           <DTS:SelectedLogProvider
-            DTS:InstanceID="{884F98C6-9D94-4DAE-8D4A-2746C1F28561}" />
+            DTS:InstanceID="{6503206E-4952-4906-9E21-17BEAF375D79}" />
         </DTS:SelectedLogProviders>
       </DTS:LoggingOptions>
       <DTS:ObjectData>
@@ -200,8 +394,8 @@
               <connections>
                 <connection
                   refId="Package\Data Flow Task\Flat File Source.Connections[FlatFileConnection]"
-                  connectionManagerID="{88ED649D-3E63-4C6B-B8C8-B8C99FF29F49}:external"
-                  connectionManagerRefId="Project.ConnectionManagers[Flat File Connection Manager]"
+                  connectionManagerID="Package.ConnectionManagers[Flat File Connection Manager]"
+                  connectionManagerRefId="Package.ConnectionManagers[Flat File Connection Manager]"
                   name="FlatFileConnection" />
               </connections>
               <outputs>
@@ -616,7 +810,9 @@
                       name="serNo" />
                     <externalMetadataColumn
                       refId="Package\Data Flow Task\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[age]"
-                      dataType="i4"
+                      codePage="1252"
+                      dataType="str"
+                      length="50"
                       name="age" />
                     <externalMetadataColumn
                       refId="Package\Data Flow Task\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[job]"
@@ -644,7 +840,9 @@
                       name="defaulter" />
                     <externalMetadataColumn
                       refId="Package\Data Flow Task\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[balance]"
-                      dataType="i4"
+                      codePage="1252"
+                      dataType="str"
+                      length="50"
                       name="balance" />
                     <externalMetadataColumn
                       refId="Package\Data Flow Task\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[housing]"
@@ -759,7 +957,7 @@
                 <property
                   dataType="System.String"
                   description="Specifies the name of the database object used to open a rowset."
-                  name="OpenRowset">[Destination_bank1]</property>
+                  name="OpenRowset">[Bank_dest1]</property>
                 <property
                   dataType="System.String"
                   description="Specifies the variable that contains the name of the database object used to open a rowset."
@@ -802,8 +1000,8 @@
               <connections>
                 <connection
                   refId="Package\Data Flow Task\OLE DB Destination.Connections[OleDbConnection]"
-                  connectionManagerID="{CF089345-D23E-4AF6-B102-BE3F57A9530D}:external"
-                  connectionManagerRefId="Project.ConnectionManagers[DESKTOP-Q6Q9KGQ_SQLEXPRESS.mydb]"
+                  connectionManagerID="Package.ConnectionManagers[DESKTOP-Q6Q9KGQ.mydb1]"
+                  connectionManagerRefId="Package.ConnectionManagers[DESKTOP-Q6Q9KGQ.mydb1]"
                   description="The OLE DB runtime connection used to access the database."
                   name="OleDbConnection" />
               </connections>
@@ -1113,7 +1311,7 @@
       DTS:refId="Package\Execute SQL Task"
       DTS:CreationName="Microsoft.ExecuteSQLTask"
       DTS:Description="Execute SQL Task"
-      DTS:DTSID="{E7DFF17D-066B-4812-9B16-552500A9AB28}"
+      DTS:DTSID="{94C1D9AB-3482-4375-AF4D-DE0005A2BD10}"
       DTS:ExecutableType="Microsoft.ExecuteSQLTask"
       DTS:LocaleID="-1"
       DTS:ObjectName="Execute SQL Task"
@@ -1135,7 +1333,7 @@
     <DTS:PrecedenceConstraint
       DTS:refId="Package.PrecedenceConstraints[Constraint]"
       DTS:CreationName=""
-      DTS:DTSID="{740FCEE5-C5C1-4B84-B0DB-6EF36409493E}"
+      DTS:DTSID="{13766A99-88CF-4372-BC19-66F54ACE085C}"
       DTS:From="Package\Data Flow Task"
       DTS:LogicalAnd="True"
       DTS:ObjectName="Constraint"
