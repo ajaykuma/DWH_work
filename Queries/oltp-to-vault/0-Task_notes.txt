@@ -1,0 +1,660 @@
+Staging environment table structure is exactly same as the OLTP source table, but with few additional columns. 
+These additional columns are the key in the Data Vault loading from the staging environment. 
+
+Hash key and Hash difference
+Hash keys are an alternative for the sequence numbers that are used traditionally. Although one of the main reasons to 
+use hash keys is to overcome the main drawbacks associated with the sequence numbers, hash keys provides the exact same 
+hash value for the same business key at any time. This would avoid lookups and caching required when loading into the Data 
+Vault that are required while using the sequence numbers.
+
+Hash difference is mainly used to detect the change in the non-key columns of the table. To record the history of 
+the changes performed on a customer record, each column of the source customer record should be compared with the same
+ column in the destination. This might be easier when the data volume is low, but when the data is huge and the number
+ of columns to be compared are relatively high, comparison might take longer in most cases. To avoid this drawback, 
+hash difference values are used to reduce the comparison time and to make change detection easy.
+
+Below is an example to generate Hash key and Hash difference binary values from the data in the table. 
+[ID] is the key that identifies the customer record in this case, therefore Hash key value has been produced on 
+the [ID] column. Other columns refer to the descriptive date of the customer, Hash Difference is used to detect the 
+changes on the descriptive data. When the customer’s title has changed to ‘Mr.’ to ‘Dr.’, hash key value has been changed.
+
+
+;WITH cte_Customer AS
+ (
+ SELECT 10001 AS [ID],'Mr.' AS [Title], 'John' AS [FirstName], 'Wick' AS [LastName]
+ UNION
+ SELECT 10001 AS [ID], 'Dr.' AS [Title], 'John' AS [FirstName], 'Wick' AS [LastName]
+ )
+ SELECT [ID],[Title],[FirstName],[LastName], HASHBYTES('MD5',CAST([ID] AS VARCHAR)) AS [HashKey], HASHBYTES('MD5',TRIM([Title])  + '^' + TRIM(ISNULL([FirstName],'')) + '^' + TRIM(ISNULL([LastName],''))) AS [HashDiff]
+ FROM cte_Customer
+ ; 
+
+--------
+The main purpose of the record source and load date are used to precisely track the source of the record and the date 
+the data has been sent/extracted from the source system (in most cases).
+
+When two or more sources are involved, it could be difficult to backtrack the origin of the data. Therefore,
+ storing the source of the data would be helpful.
+
+Although load date helps to identify the record timing, it is used as part of the primary key while satellite
+ loading to track record changes.
+
+All the staging tables in the ER diagram should be loaded like the customer table below.
+
+--remember to create database and schema appropriately
+
+INSERT INTO [DataVaultStaging].[stg].[Customers]
+ (      [CustomerID]
+       ,[CompanyName]
+       ,[ContactName]
+       ,[ContactTitle]
+       ,[Address]
+       ,[City]
+       ,[Region]
+       ,[PostalCode]
+       ,[Country]
+       ,[Phone]
+       ,[Fax]
+       ,[RecordSource]
+       ,[LoadDate]
+ )
+ SELECT [CustomerID]
+       ,[CompanyName]
+       ,[ContactName]
+       ,[ContactTitle]
+       ,[Address]
+       ,[City]
+       ,[Region]
+       ,[PostalCode]
+       ,[Country]
+       ,[Phone]
+       ,[Fax]
+      ,'Northwind_Sqldb' AS [RecordSource]
+      ,CAST(GETDATE() AS DATE) AS [LoadDate]
+ FROM [NORTHWND].[dbo].[Customers]
+ ; 
+
+
+---------
+Hash keys should be derived on all the staging tables in the ER diagram like the customer hash keys below
+
+
+UPDATE [DataVaultStaging].[stg].[Customers]
+SET [CustomerHashKey] = HASHBYTES('MD5',[CustomerID])
+;
+  
+UPDATE [DataVaultStaging].[stg].[Customers]
+SET [CustomerHashDiff] = HASHBYTES('MD5', TRIM([CompanyName]) +  '^' + TRIM(ISNULL([ContactName],''))  +  '^' + TRIM(ISNULL([ContactTitle],'')) +  '^' + TRIM(ISNULL([Address],''))      +  '^' + TRIM(ISNULL([City],''))         +  '^' + TRIM(ISNULL([Region],''))       +  '^' + TRIM(ISNULL([PostalCode],''))   +  '^' + TRIM(ISNULL([Country],''))      +  '^' + TRIM(ISNULL([Phone],''))        +  '^'                    + TRIM(ISNULL([Fax],''))                                
+)
+; 
+
+-------
+--create hub
+The basic structure of the hub contains:
+
+Hash key
+Date loaded
+Source of the record
+Business Key
+
+CREATE TABLE [raw].[HubCustomers](
+               [CustomerHashKey] [varbinary](32) NOT NULL,
+               [LoadDate] [date] NOT NULL,
+               [RecordSource] [varchar](100) NOT NULL,
+               [CustomerID] [nchar](5) NOT NULL,
+  CONSTRAINT [PK_HubCustomers] PRIMARY KEY CLUSTERED 
+ (
+               [CustomerHashKey] ASC
+ )ON [PRIMARY],
+  CONSTRAINT [UK_HubCustomers] UNIQUE NONCLUSTERED
+ (
+               [CustomerID] ASC
+ )ON [PRIMARY],
+ )ON [PRIMARY]
+ ; 
+
+-------------
+Loading the hub
+Loading the hub is done in one simple step as below. If the business key doesn’t exist in the hub when compared 
+with the staging, insert the business key, its hash key and other columns as defined in the hub structure.
+
+--create database and schema appropriately
+INSERT INTO [DataVault].[raw].[HubCustomers]
+  (
+        [CustomerHashKey]
+       ,[LoadDate]
+       ,[RecordSource]
+       ,[CustomerID]
+  )
+ SELECT Stg.[CustomerHashKey]
+                 ,Stg.[LoadDate]
+                 ,Stg.[RecordSource]
+                 ,Stg.[CustomerID]
+ FROM [DataVaultStaging].[stg].[Customers] Stg 
+ WHERE NOT EXISTS (   SELECT 1 
+FROM [DataVault].[raw].[HubCustomers] Hub
+WHERE Hub.[CustomerID] = Stg.[CustomerID]
+)
+AND Stg.[LoadDate] = CAST(GETDATE() AS DATE)              
+; 
+
+----------
+--create link
+The basic structure of the link contains:
+
+Hash key for the business key combination
+Date loaded
+Source of the record
+Reference hub keys
+
+Make sure the referenced hubs in the link table exists in before the physical link table is created
+CREATE TABLE [raw].[LinkOrderDetails](
+               [OrderDetailHashKey] [varbinary](32) NOT NULL,
+               [LoadDate] [date] NOT NULL,
+               [RecordSource] [varchar](100) NOT NULL,
+               [OrderHashKey] [varbinary](32) NOT NULL,
+               [ProductHashKey] [varbinary](32) NOT NULL,
+  CONSTRAINT [PK_LinkOrderDetails] PRIMARY KEY CLUSTERED 
+ (
+               [OrderDetailHashKey] ASC
+ ),
+  CONSTRAINT [UK_LinkOrderDetails] UNIQUE NONCLUSTERED 
+ (
+               [OrderHashKey] ASC,
+               [ProductHashKey] ASC
+ )
+ ) ON [PRIMARY]
+ GO
+  
+ ALTER TABLE [raw].[LinkOrderDetails]  WITH CHECK ADD  CONSTRAINT [FK_LinkOrderDetails_HubProducts] FOREIGN KEY([ProductHashKey])
+ REFERENCES [raw].[HubProducts] ([ProductHashKey])
+ GO
+  
+  
+ ALTER TABLE [raw].[LinkOrderDetails]  WITH CHECK ADD  CONSTRAINT [FK_LinkOrderDetails_LinkOrders] FOREIGN KEY([OrderHashKey])
+ REFERENCES [raw].[LinkOrders] ([OrderHashKey])
+ GO 
+
+----------
+
+Load the link:
+If the business key combination doesn’t exist in the hub when compared with the staging, insert the business keys, 
+a unique hash key produced on the combination of the business keys and other columns as defined in the link structure.
+
+The one thing that occur before the Link loading is the Hub loading, so that the referenced Hash keys in the Link
+ does exist in the Hub.
+
+INSERT INTO [DataVault].[raw].[LinkOrderDetails]
+  (
+       [OrderDetailHashKey]
+       ,[LoadDate]
+       ,[RecordSource]
+       ,[OrderHashKey]
+       ,[ProductHashKey]
+  )
+ SELECT Stg.[OrderDetailHashKey]
+       ,Stg.[LoadDate]
+       ,Stg.[RecordSource]
+       ,Stg.[OrderHashKey]
+       ,Stg.[ProductHashKey]
+ FROM [DataVaultStaging].[stg].[Order Details] Stg 
+ WHERE NOT EXISTS 
+( 
+SELECT 1
+FROM [DataVault].[raw].[LinkOrderDetails] Link
+WHERE Link.[OrderHashKey] = Stg.[OrderHashKey]
+   AND Link.[ProductHashKey]        = Stg.[ProductHashKey]
+)
+AND Stg.[LoadDate] = CAST(GETDATE() AS DATE)        
+ ; 
+
+----------
+
+Satellite
+A satellite can only be linked to one hub or one link. Therefore the hub/link loading referenced by the 
+satellite should occur before the satellite loading.
+
+The basic structure of the satellite contains:
+
+Referenced hub/link key
+Date loaded
+Source of the record
+Hash difference value
+Load end date (applicable when the history of the record changes are to be determined)
+Descriptive data of the entity
+
+ CREATE TABLE [raw].[SatCustomers](
+               [CustomerHashKey] [varbinary](32) NOT NULL,
+               [LoadDate] [date] NOT NULL,
+               [LoadEndDate] [date] NULL,
+               [RecordSource] [varchar](100) NOT NULL,
+               [CompanyName] [nvarchar](40) NOT NULL,
+               [ContactName] [nvarchar](30) NULL,
+               [ContactTitle] [nvarchar](30) NULL,
+               [Address] [nvarchar](60) NULL,
+               [City] [nvarchar](15) NULL,
+               [Region] [nvarchar](15) NULL,
+               [PostalCode] [nvarchar](10) NULL,
+               [Country] [nvarchar](15) NULL,
+               [Phone] [nvarchar](24) NULL,
+               [Fax] [nvarchar](24) NULL,
+               [CustomerHashDiff] [varbinary](32) NOT NULL,
+  CONSTRAINT [PK_SatCustomers] PRIMARY KEY CLUSTERED 
+ (
+               [CustomerHashKey] ASC,
+               [LoadDate] ASC
+ ) ON [PRIMARY]
+ ) ON [PRIMARY]
+ GO
+  
+ ALTER TABLE [raw].[SatCustomers]  WITH CHECK ADD  CONSTRAINT [FK_SatCustomers_HubCustomers] FOREIGN KEY([CustomerHashKey])
+ REFERENCES [raw].[HubCustomers] ([CustomerHashKey])
+ GO 
+
+---------
+ the Data Vault satellites that holds the descriptive data are loaded using two step procedure. Each satellite record is
+ uniquely identified from the hash Key of the hub/link referenced in the Satellite and the load date (also the start date)
+ of the satellite.
+
+The one thing that occur before the satellite loading is the hub/link loading that are being reference in the satellite, 
+so that the referenced Hash keys in the satellite does exist in the hub/link.
+
+1st step: 
+end-date the current satellite data that has changed. When an existing record with modified descriptive data appears in the staging, 
+then the current satellite record should be end-dated (modified from the default or null). 
+Difference in the Hash difference value implies the descriptive data of the satellite has changed. 
+
+UPDATE Sat
+ SET Sat.[LoadEndDate] = DATEADD(d,-1,Stg.LoadDate)
+ FROM [DataVaultStaging].[Stg].[Customers] Stg 
+       INNER JOIN [DataVault].[raw].[SatCustomers] Sat
+           ON  Sat.[CustomerHashKey]       = Stg.[CustomerHashKey]
+ WHERE Sat.[CustomerHashDiff] <> Stg.[CustomerHashDiff]
+               AND Sat.[LoadEndDate] IS NULL
+               AND Sat.[LoadDate] < Stg.LoadDate
+ ; 
+
+2nd step:
+insert the new Satellite records that never existed, and the modified records that were end-dated in the
+ above step with a new unique combination, and with the load end date to a default value or null.
+
+INSERT INTO [DataVault].[raw].[SatCustomers]
+ (
+                  [CustomerHashKey]
+                 ,[LoadDate]
+                 ,[RecordSource]
+                 ,[CompanyName]
+                 ,[ContactName]
+                 ,[ContactTitle]
+                 ,[Address]
+                 ,[City]
+                 ,[Region]
+                 ,[PostalCode]
+                 ,[Country]
+                 ,[Phone]
+                 ,[Fax]
+                 ,[CustomerHashDiff]
+ )
+ SELECT Stg.[CustomerHashKey]
+       ,Stg.[LoadDate]
+       ,Stg.[RecordSource]
+       ,Stg.[CompanyName]
+       ,Stg.[ContactName]
+       ,Stg.[ContactTitle]
+       ,Stg.[Address]
+       ,Stg.[City]
+       ,Stg.[Region]
+       ,Stg.[PostalCode]
+       ,Stg.[Country]
+       ,Stg.[Phone]
+       ,Stg.[Fax]
+       ,Stg.[CustomerHashDiff]
+ FROM [DataVaultStaging].[Stg].[Customers] Stg 
+            LEFT OUTER JOIN [DataVault].[raw].[SatCustomers] Sat
+                ON Sat.[CustomerHashKey] = Stg.[CustomerHashKey]
+ WHERE 
+(
+ Sat.[CustomerHashDiff] <> Stg.[CustomerHashDiff]          
+ OR          
+ Sat.[CustomerHashKey] IS NULL
+ )
+ AND Stg.[LoadDate] = CAST(GETDATE() AS DATE)              
+ ;  
+
+===========
+Dimension load
+Descriptive data used to measure the facts are basically loaded into the dimensions. In this mart, the dimensions 
+are designed based on the Slowly Changing Dimension type 2 model, which means the dimensions stores the current as well 
+as the historical changes of the descriptive data.
+
+Dimensions of the mart are loaded using the Hub and satellites under the same hub in the data Vault model.
+
+Dimension holds a primary key value which will be linked with the fact table.
+
+With SCD type 1, Customer hash key in the hub can be used as a primary key in the dimension. Any new updates for the dimension 
+can easily be identified and updated using the load date fields from the satellite.
+
+But for SCD type 2, as customer hash key is referenced multiple types in the current and historical records, a unique key 
+combination should be made as a primary key. In the data vault satellite, Customer Hash key and Load date forms the composite
+ primary key, which are unique. While loading the dimension a new hash key is derived from the Customer Hash key and Load date
+ to load the primary key value in the dimension.
+
+--script to create dimension
+CREATE TABLE [dbo].[DimCustomers](
+               [CustomerKey] [varbinary](32) NOT NULL,
+               [CustomerHashKey] [varbinary](32) NOT NULL,
+               [LoadDate] [date] NOT NULL,
+               [LoadEndDate] [date] NULL,
+               [CustomerID] [nchar](5) NOT NULL,
+               [CompanyName] [nvarchar](40) NOT NULL,
+               [ContactName] [nvarchar](30) NOT NULL,
+               [ContactTitle] [nvarchar](30) NOT NULL,
+               [Address] [nvarchar](60) NOT NULL,
+               [City] [nvarchar](15) NOT NULL,
+               [Region] [nvarchar](15) NOT NULL,
+               [PostalCode] [nvarchar](10) NOT NULL,
+               [Country] [nvarchar](15) NOT NULL,
+               [Phone] [nvarchar](24) NOT NULL,
+               [Fax] [nvarchar](24) NOT NULL,
+               [RecordSource] [varchar](100) NOT NULL,
+               [CurrentRecord] [bit] NOT NULL,
+  CONSTRAINT [PK_DimCustomers] PRIMARY KEY CLUSTERED 
+ (
+               [CustomerKey] ASC
+ )ON [PRIMARY],
+  CONSTRAINT [UK_DimCustomers] UNIQUE NONCLUSTERED 
+ (
+               [CustomerHashKey] ASC,
+               [LoadDate] ASC
+ )ON [PRIMARY]
+ ) ON [PRIMARY]
+ GO 
+
+A two-step load process is required to load the SCD type 2 dimension from Data Vault.
+
+Step 1 – Inserts the latest Satellite records that are not in the dimension (both current and old).
+
+INSERT INTO [OrdersInfoMart].[dbo].[DimCustomers]
+ (     [CustomerKey]
+       ,[CustomerHashKey]
+       ,[LoadDate]
+       ,[LoadEndDate]
+       ,[CustomerID]
+       ,[CompanyName]
+       ,[ContactName]
+       ,[ContactTitle]
+       ,[Address]
+       ,[City]
+       ,[Region]
+       ,[PostalCode]
+       ,[Country]
+       ,[Phone]
+       ,[Fax]
+       ,[RecordSource]
+       ,[CurrentRecord]
+ )
+ SELECT 
+        HASHBYTES('MD5', Hub.[CustomerID] +  '^' + CONVERT(varchar, Sat.[LoadDate], 121)) AS [CustomerKey]
+       ,Hub.[CustomerHashKey]
+       ,Sat.[LoadDate]
+       ,ISNULL(Sat.[LoadEndDate],'39991231') AS [LoadEndDate]
+       ,Hub.[CustomerID]
+       ,Sat.[CompanyName]
+       ,ISNULL(Sat.[ContactName],'')  AS [ContactName]
+       ,ISNULL(Sat.[ContactTitle],'') AS [ContactTitle]
+       ,ISNULL(Sat.[Address],'')      AS [Address]
+       ,ISNULL(Sat.[City],'')         AS [City]
+       ,ISNULL(Sat.[Region],'')       AS [Region]        
+       ,ISNULL(Sat.[PostalCode],'')   AS [PostalCode]
+       ,ISNULL(Sat.[Country],'')      AS [Country]      
+       ,ISNULL(Sat.[Phone],'')        AS [Phone]
+       ,ISNULL(Sat.[Fax],'')          AS [Fax] 
+       ,Sat.[RecordSource]
+       ,CASE WHEN ISNULL(Sat.[LoadEndDate],'39991231') = '39991231' 
+        THEN 1 ELSE 0 END AS [CurrentRecord]
+ FROM [DataVault].[raw].[HubCustomers] Hub 
+INNER JOIN  [DataVault].[raw].[SatCustomers] Sat
+   ON Sat.[CustomerHashKey] = Hub.[CustomerHashKey]
+ WHERE 
+NOT EXISTS (   
+             SELECT 1
+             FROM [OrdersInfoMart].[dbo].[DimCustomers] Dim  
+             WHERE Dim.[CustomerHashKey] = Sat.[CustomerHashKey]
+                AND Dim.[LoadDate]       = Sat.[LoadDate]
+           )
+ ; 
+
+Step 2 – Dimension’s ‘Current’ records are end-dated and updated as ‘Non-Current’ when the Data Vault records were 
+modified/end-dated in Satellite.
+
+UPDATE Dim
+ SET Dim.[LoadEndDate] = Sat.[LoadEndDate],
+               Dim.[CurrentRecord] = 0 
+ FROM [OrdersInfoMart].[dbo].[DimCustomers] Dim        
+ INNER JOIN  [DataVault].[raw].[SatCustomers] Sat 
+    ON Sat.[CustomerHashKey]   = Dim.[CustomerHashKey]
+    AND Sat.[LoadDate]         = Dim.[LoadDate]                   
+    AND ISNULL(Sat.[LoadEndDate],'39991231') <> '39991231'
+ WHERE Dim.[CurrentRecord] = 1
+ ; 
+
+-----------------------
+Fact Load
+Fact tables primarily store the measurable fields than can be aggregated and the foreign keys for the dimension tables.
+
+Facts of the mart are mainly loaded using the Links and Hubs that are connected in the Data Vault for SCD type 1 dimensions. 
+However, for SCD type 2 dimensions, either the dimensions that were already loaded or the Satellites used to load the dimensions
+ can also be used to load the foreign keys in the Fact table.
+
+--create fact table
+CREATE TABLE [dbo].[FactOrders](
+               [OrderKey] [varbinary](32) NOT NULL,
+               [CustomerKey] [varbinary](32) NOT NULL,
+               [EmployeeKey] [varbinary](32) NOT NULL,
+               [ShipperKey] [varbinary](32) NOT NULL,
+               [ProductKey] [varbinary](32) NOT NULL,
+               [OrderDate] [datetime] NOT NULL,
+               [RequiredDate] [datetime] NOT NULL,
+               [ShippedDate] [datetime] NOT NULL,
+               [Freight] [money] NOT NULL,
+               [UnitPrice] [money] NOT NULL,
+               [Quantity] [smallint] NOT NULL,
+               [Discount] [real] NOT NULL,
+               [LoadDate] [date] NOT NULL,
+               [RecordSource] [varchar](100) NOT NULL,
+  CONSTRAINT [PK_FactOrders] PRIMARY KEY CLUSTERED 
+ (
+               [OrderKey] ASC,
+               [CustomerKey] ASC,
+               [EmployeeKey] ASC,
+               [ShipperKey] ASC,
+               [ProductKey] ASC
+ ) ON [PRIMARY]
+ ) ON [PRIMARY]
+ GO
+  
+ ALTER TABLE [dbo].[FactOrders]  WITH CHECK ADD  CONSTRAINT [FK_FactOrders_DimCustomers] FOREIGN KEY([CustomerKey])
+ REFERENCES [dbo].[DimCustomers] ([CustomerKey])
+ GO
+  
+ ALTER TABLE [dbo].[FactOrders]  WITH CHECK ADD  CONSTRAINT [FK_FactOrders_DimEmployees] FOREIGN KEY([EmployeeKey])
+ REFERENCES [dbo].[DimEmployees] ([EmployeeKey])
+ GO
+  
+ ALTER TABLE [dbo].[FactOrders]  WITH CHECK ADD  CONSTRAINT [FK_FactOrders_DimProducts] FOREIGN KEY([ProductKey])
+ REFERENCES [dbo].[DimProducts] ([ProductKey])
+ GO
+ 
+ ALTER TABLE [dbo].[FactOrders]  WITH CHECK ADD  CONSTRAINT [FK_FactOrders_DimShippers] FOREIGN KEY([ShipperKey])
+ REFERENCES [dbo].[DimShippers] ([ShipperKey])
+ GO 
+
+-----------
+Loading the fact
+Before loading the fact, it is a mandatory step that all the dimensions are loaded. Therefore, while loading the Fact table, 
+the referenced dimension keys exists and does not cause a load error.
+
+As said above, when SCD type 2 dimensions are involved, Fact tables can be loaded in two different ways. 
+First approach is using the existing dimensions that were already loaded are joined with Hubs 
+and links to get the foreign key information to be loaded into the Fact table.
+
+INSERT INTO [OrdersInfoMart].[dbo].[FactOrders]
+ (
+        [OrderKey]
+       ,[CustomerKey]
+       ,[EmployeeKey]
+       ,[ShipperKey]
+       ,[ProductKey]
+       ,[OrderDate]
+       ,[RequiredDate]
+       ,[ShippedDate]
+       ,[Freight]
+       ,[UnitPrice]
+       ,[Quantity]
+       ,[Discount]
+       ,[LoadDate]
+       ,[RecordSource]
+ )
+ SELECT LO.[OrderHashKey] AS [OrderKey]
+       ,DC.[CustomerKey]
+       ,DE.[EmployeeKey]
+       ,DS.[ShipperKey]
+       ,DP.[ProductKey]
+       ,SO.[OrderDate]
+       ,SO.[RequiredDate]
+       ,ISNULL(SO.[ShippedDate],'19000101') AS [ShippedDate]
+       ,SO.[Freight]
+       ,SOD.[UnitPrice]
+       ,SOD.[Quantity]
+       ,SOD.[Discount]
+       ,SOD.[LoadDate]
+       ,SOD.[RecordSource]
+ FROM [DataVault].[raw].[LinkOrders] LO 
+ INNER JOIN [DataVault].[raw].[SatOrders] SO
+   ON SO.[OrderHashKey] = LO.[OrderHashKey]
+ INNER JOIN [DataVault].[raw].[LinkOrderDetails] LOD
+   ON LOD.[OrderHashKey] = LO.[OrderHashKey]
+ INNER JOIN [DataVault].[raw].[SatOrderDetails] SOD
+    ON LOD.[OrderDetailHashKey] = SOD.[OrderDetailHashKey]
+ INNER JOIN [OrdersInfoMart].[dbo].[DimCustomers] DC
+    ON DC.[CustomerHashKey] = LO.[CustomerHashKey]
+    AND LO.[LoadDate] BETWEEN DC.[LoadDate] AND DC.[LoadEndDate]
+ INNER JOIN [OrdersInfoMart].[dbo].[DimEmployees] DE
+    ON DE.[EmployeeHashKey] = LO.[EmployeeHashKey]
+    AND LO.[LoadDate] BETWEEN DE.[LoadDate] AND DE.[LoadEndDate]
+ INNER JOIN [OrdersInfoMart].[dbo].[DimShippers] DS
+    ON DS.[ShipperHashKey] = LO.[ShipperHashKey]
+    AND LO.[LoadDate] BETWEEN DS.[LoadDate] AND DS.[LoadEndDate]
+ INNER JOIN [OrdersInfoMart].[dbo].[DimProducts] DP
+    ON DP.[ProductHashKey] = LOD.[ProductHashKey]
+    AND LOD.[LoadDate] BETWEEN DP.[LoadDate] AND DP.[LoadEndDate]
+ WHERE NOT EXISTS        
+ (             
+     SELECT 1
+     FROM [OrdersInfoMart].[dbo].[FactOrders] F      
+     WHERE F.[OrderKey]    = LO.[OrderHashKey]
+       AND F.[CustomerKey] = DC.[CustomerKey]
+       AND F.[EmployeeKey] = DE.[EmployeeKey]
+       AND F.[ShipperKey]  = DS.[ShipperKey]
+       AND F.[ProductKey]  = DP.[ProductKey]
+ )
+ ;
+
+-----------
+Second approach is by linking the Hubs, Links and Satellites to get the foreign key information to be loaded into the Fact table.
+
+;WITH Stg_Orders AS
+ (
+ SELECT 
+        LO.[OrderHashKey] AS [OrderKey]
+        ,HASHBYTES('MD5', HC.[CustomerID] +  '^' + CONVERT(varchar, SC.[LoadDate], 121)) AS [CustomerKey]
+       ,HASHBYTES('MD5', HE.[EmployeeID] +  '^' + CONVERT(varchar, SE.[LoadDate], 121)) AS [EmployeeKey]
+       ,HASHBYTES('MD5', CAST(HS.[ShipperID] AS VARCHAR) +  '^' + CONVERT(varchar, SS.[LoadDate], 121)) AS [ShipperKey]
+       ,HASHBYTES('MD5', CAST(HP.[ProductID] AS VARCHAR) +  '^' + CONVERT(varchar, SP.[LoadDate], 121)) AS [ProductKey]
+       ,SO.[OrderDate]
+       ,SO.[RequiredDate]
+       ,ISNULL(SO.[ShippedDate],'19000101') AS [ShippedDate]
+       ,SO.[Freight]
+       ,SOD.[UnitPrice]
+       ,SOD.[Quantity]
+       ,SOD.[Discount]
+       ,SOD.[LoadDate]
+       ,SOD.[RecordSource]
+ FROM [DataVault].[raw].[LinkOrders] LO 
+ INNER JOIN [DataVault].[raw].[SatOrders] SO
+    ON SO.[OrderHashKey] = LO.[OrderHashKey]
+ INNER JOIN [DataVault].[raw].[LinkOrderDetails] LOD
+    ON LOD.[OrderHashKey] = LO.[OrderHashKey]
+ INNER JOIN [DataVault].[raw].[SatOrderDetails] SOD
+    ON LOD.[OrderDetailHashKey] = SOD.[OrderDetailHashKey]
+ INNER JOIN [DataVault].[raw].[HubCustomers] HC
+    ON HC.[CustomerHashKey] = LO.[CustomerHashKey]
+ INNER JOIN [DataVault].[raw].[SatCustomers] SC
+    ON SC.[CustomerHashKey] = HC.[CustomerHashKey]
+    AND LO.[LoadDate] BETWEEN SC.[LoadDate] 
+                      AND ISNULL(SC.[LoadEndDate],'39991231')
+ INNER JOIN [DataVault].[raw].[HubEmployees] HE
+    ON HE.[EmployeeHashKey] = LO.[EmployeeHashKey]
+ INNER JOIN [DataVault].[raw].[SatEmployees] SE
+    ON SE.[EmployeeHashKey] = HE.[EmployeeHashKey]
+    AND LO.[LoadDate] BETWEEN SE.[LoadDate] 
+                      AND ISNULL(SE.[LoadEndDate],'39991231')
+ INNER JOIN [DataVault].[raw].[HubShippers] HS
+    ON HS.[ShipperHashKey] = LO.[ShipperHashKey]
+ INNER JOIN [DataVault].[raw].[SatShippers] SS
+    ON SS.[ShipperHashKey] = HS.[ShipperHashKey]
+    AND LO.[LoadDate] BETWEEN SS.[LoadDate] 
+                      AND ISNULL(SS.[LoadEndDate],'39991231')
+ INNER JOIN [DataVault].[raw].[HubProducts] HP
+    ON HP.[ProductHashKey] = LOD.[ProductHashKey]
+ INNER JOIN [DataVault].[raw].[SatProducts] SP
+    ON SP.[ProductHashKey] = HP.[ProductHashKey]
+    AND LOD.[LoadDate] BETWEEN SP.[LoadDate] 
+                       AND ISNULL(SP.[LoadEndDate],'39991231')
+ )
+ INSERT INTO [OrdersInfoMart].[dbo].[FactOrders]
+ (              
+  [OrderKey]
+ ,[CustomerKey]
+ ,[EmployeeKey]
+ ,[ShipperKey]
+ ,[ProductKey]
+ ,[OrderDate]
+ ,[RequiredDate]
+ ,[ShippedDate]
+ ,[Freight]
+ ,[UnitPrice]
+ ,[Quantity]
+ ,[Discount]
+ ,[LoadDate]
+ ,[RecordSource]
+ )
+ SELECT 
+  [OrderKey]
+ ,[CustomerKey]
+ ,[EmployeeKey]
+ ,[ShipperKey]
+ ,[ProductKey]
+ ,[OrderDate]
+ ,[RequiredDate]
+ ,[ShippedDate]
+ ,[Freight]
+ ,[UnitPrice]
+ ,[Quantity]
+ ,[Discount]
+ ,[LoadDate]
+ ,[RecordSource]
+ FROM Stg_Orders Ord
+ WHERE 
+NOT EXISTS (             
+             SELECT 1
+             FROM [OrdersInfoMart].[dbo].[FactOrders] F            
+             WHERE F.[OrderKey]      = Ord.[OrderKey]
+               AND F.[CustomerKey]   = Ord.[CustomerKey]
+               AND F.[EmployeeKey]   = Ord.[EmployeeKey]
+               AND F.[ShipperKey]    = Ord.[ShipperKey]
+               AND F.[ProductKey]    = Ord.[ProductKey]
+           )
+ ;
+
+---------------
