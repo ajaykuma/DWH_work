@@ -1,3 +1,6 @@
+use DataVaultRaw
+go
+
 INSERT INTO [DataVaultRaw].[raw].[SatCustomers]
  (
                   [CustomerHashKey]
@@ -29,8 +32,8 @@ INSERT INTO [DataVaultRaw].[raw].[SatCustomers]
        ,Stg.[Phone]
        ,Stg.[Fax]
        ,Stg.[CustomerHashDiff]
- FROM [DataVaultStaging].[Stg].[Customers] Stg 
-            LEFT OUTER JOIN [DataVault].[raw].[SatCustomers] Sat
+ FROM [DataVaultStaging].[stg].[Customers] Stg 
+            LEFT OUTER JOIN [DataVaultRaw].[raw].[SatCustomers] Sat
                 ON Sat.[CustomerHashKey] = Stg.[CustomerHashKey]
  WHERE 
 (

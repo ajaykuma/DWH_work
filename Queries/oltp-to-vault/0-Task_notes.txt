@@ -266,8 +266,8 @@ Difference in the Hash difference value implies the descriptive data of the sate
 
 UPDATE Sat
  SET Sat.[LoadEndDate] = DATEADD(d,-1,Stg.LoadDate)
- FROM [DataVaultStaging].[Stg].[Customers] Stg 
-       INNER JOIN [DataVault].[raw].[SatCustomers] Sat
+ FROM [DataVaultStaging].[stg].[Customers] Stg 
+       INNER JOIN [DataVaultRaw].[raw].[SatCustomers] Sat
            ON  Sat.[CustomerHashKey]       = Stg.[CustomerHashKey]
  WHERE Sat.[CustomerHashDiff] <> Stg.[CustomerHashDiff]
                AND Sat.[LoadEndDate] IS NULL
@@ -278,7 +278,10 @@ UPDATE Sat
 insert the new Satellite records that never existed, and the modified records that were end-dated in the
  above step with a new unique combination, and with the load end date to a default value or null.
 
-INSERT INTO [DataVault].[raw].[SatCustomers]
+use DataVaultRaw
+go
+
+INSERT INTO [DataVaultRaw].[raw].[SatCustomers]
  (
                   [CustomerHashKey]
                  ,[LoadDate]
@@ -309,16 +312,16 @@ INSERT INTO [DataVault].[raw].[SatCustomers]
        ,Stg.[Phone]
        ,Stg.[Fax]
        ,Stg.[CustomerHashDiff]
- FROM [DataVaultStaging].[Stg].[Customers] Stg 
-            LEFT OUTER JOIN [DataVault].[raw].[SatCustomers] Sat
+ FROM [DataVaultStaging].[stg].[Customers] Stg 
+            LEFT OUTER JOIN [DataVaultRaw].[raw].[SatCustomers] Sat
                 ON Sat.[CustomerHashKey] = Stg.[CustomerHashKey]
- WHERE 
+where
 (
  Sat.[CustomerHashDiff] <> Stg.[CustomerHashDiff]          
  OR          
  Sat.[CustomerHashKey] IS NULL
- )
- AND Stg.[LoadDate] = CAST(GETDATE() AS DATE)              
+ )  
+ --AND Stg.[LoadDate] = CAST(GETDATE() AS DATE)              
  ;  
 
 ===========
