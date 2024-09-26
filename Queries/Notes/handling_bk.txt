@@ -1,0 +1,28 @@
+think if first source allows null or no null
+
+--late arrving keys
+--missing primary keys
+
+substitute (null business keys) - with actual value of some sort.
+primary_keys - business keys - -1  (may have history)
+--cannot have more than -1 record/batch
+optional_keys - -2 (does not have history)
+--you can have any number per batch/per business key
+
+-1 and -2 subsititution is designated at time of modelling..
+
+-------------------
+Should Business key should be not null column at source?
+
+if we have null at source & load them to satellites with a host record mapping, these
+records may always remain as ghost forever in the satellite tables when even if record gets
+resolved at source.(because update in record will flow as fresh record into vault).
+
+--we should have a businesss key which is unique across
+  option - usage of surrogate key
+
+
+similarly, if we have same BKs in source, problem may arise in loading in satellite.
+
+-------------------
+

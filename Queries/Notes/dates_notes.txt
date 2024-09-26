@@ -1,0 +1,101 @@
+In the Data Vault Hub’s (1 on 1 with the natural business key) and Link’s (1 on 1 with the natural business relationship) 
+do not keep track of history,  so only a Technical date is needed. 
+This is the Load_DTS which can be found in each table!
+
+From a Vault perspective the date when a record is created (in the source) 
+is descriptive information! This means that this date is only to be found in Satellites. 
+
+Technical Date – addressing the date on which the record is available for the data warehouse load. 
+(the date on which the record is pushed into or pulled to the data warehouse). 
+Preferably this includes the timestamp as well.
+--The Technical date is used for auditability reasons. Is the only date which will be available in 
+  all Data Vault tables (Hub’s, Link’s and Satellites).
+
+Source Date – this is the date the record is created or altered in the source system. 
+This date needs to be given by the source system! This can be the creation date or update date in the source. 
+This date is always before the technical date (a record can’t be available in the staging area 
+when it is not yet created or updated in the original source system). 
+For a real time data warehouse the Source effective date and the Technical date can be the same 
+if the data is pushed into the source and the data warehouse at the same time.
+--The Source date is used for validness of the data for the business. Only in the Satellites 
+  (preferably for all satellites).
+
+Attribute Dates – these are dates which provide context for the business, e.g. a valid from and 
+valid to date or start date and end date of an arrangement, mortgage, etc. 
+From a data warehouse perspective these dates are just like name, address, etc.–> 
+just a description (but an important one for the business).
+--The Attribute dates are used to give meaning to the business. Only in Satellites (where applicable)
+
+From a source we may receive the following dates:
+
+Creation_date: the date the record is created
+Startdate_contract: is the date the customer sees on his contract as being the agreed start date
+Enddate_contract: is the date the customer sees on his contract as being the agreed end date
+
+This will result in fields such as below in the satellite.
+LOAD_DTS is added by the loading process as is Record_Source
+
+Source:   Satellite
+Creation_data:
+	--Startdata_contract
+Startdata_contract:
+	--Effective_DTS
+Enddate_contract:
+	--Enddate_contract
+description1
+	--description1
+description2
+	--description
+
+#what if we want to add end dates to our satellites.
+End dates are very useful for reporting or data mart creation, time slicing, 
+keeping track of history, etc. The problem with end dates is that these will only 
+be known when a record is altered in the source. This means that the existing (now old) 
+record needs to be updated.
+
+Looking at the satellite we have a Load_DTS (technical date) which means the date the record 
+is loaded into the data warehouse. Since the end date was not known at that moment the 
+Load_DTS is wrong for the end date and should need an update as well. However, 
+if we do that we lose the auditability for the other attributes which were set on the original Load_DTS. 
+This concludes into an extra Technical date, Load_End_Dts, which meets the date the end date is updated
+
+This will give the following dates in the satellites (Note: Hub’s and Link’s only have the technical Load_DTS):
+
+Load_DTS:
+Technical Date: This is the data warehouse load Date_Time_Stamp and one of the untouchables of Data Vault. 
+This is assigned by the data warehouse and based on the date and time of the load from Stage 
+to the Data Warehouse. All Data Vault tables include this Load D/T as a required attribute. 
+Note however that only the Satellite will use this Load D/T as part of the key.
+
+Src_Eff_DT:
+Source date: This is the date which implies the date the record is originated or changed in the source. 
+This date is only available in the satellites. The importance of this date is to be sure that
+we not only know when the data arrived into the data warehouse (that is done by Load_DTS)
+ but also when the record is created/updated by the business .
+If this date cannot be delivered by the source (is not stored in the source system)  
+an alternative should be chosen. 
+
+This can be the extraction date as being the date on which the record is extracted from the source. 
+Importance of this date is, amongst others, when building a dimension –
+ this date will be used to  and provides the dates upon which historization is based.
+
+Src_End_DT:
+Source date: This is the date which is set when a record is changed – a new record will be inserted 
+and the current record will be end dated. This will be done based upon the Buss_Eff_Date. 
+This is one of the two records in a satellite which might have an update. 
+All other records are insert only. Main reason for using the Buss_End_Date is for 
+retrieving data with a time context (for instance building a dimension with historization) .
+
+Load_End_DTS
+
+Technical date: When the Srcs_End_DT is set  we need to know on which date this is technically 
+done for audit and compliancy reasons. This is maintained by the Load_End_DTS.
+
+The Source dates will be the dates which  likely to be used to determine the history in the reports or datamarts.
+
+
+
+
+
+
+

@@ -1,0 +1,94 @@
+Problem 1: Language School
+Mr. Trotter, the proprietor of a rapidly-growing language school, 
+wants to introduce a new system in his company. He can no longer
+ keep track of all the information on his own, so he’s asked for our help. 
+He is a bit chaotic, though. This is what he said:
+There are dozens of new people coming here and I no longer know what to do! 
+For example, last week a girl named Hannah came and
+ she wanted to become a student, but I couldn’t find my notebook so 
+I couldn’t write her surname down. 
+Then she asked about the kind of courses we offer and well… 
+we have lots of them, so I showed her the calendar 
+where I write down all the classes. She picked Chinese and then asked 
+who taught it. Well, I said, we have many teachers here, 
+so I started looking in my e-mail box to see who I wrote about teaching
+ Chinese this term. It took longer than I expected 
+and Hannah left. What a pity!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Based on the description, suggest a few entities for Mr. Trotter’s new system so that he can run his school more effectively.
+Solution:
+At first, Mr. Trotter provides the example of Hannah who wants to sign up for a course. In our system,
+ she would be one of many instances of the entity Student. Students in our system sign up for a Course, 
+which is another good candidate for an entity. Finally, the girl asks about the Teacher – naturally, 
+we want to keep track of them as well, so they become the third entity.
+
+Course, Student, Teacher
+
+================
+Problem 2: Busy Writer
+Joanne L. Bowling works for various companies and writes things for them. 
+She is very busy and would like to have convenient 
+application that keeps track of everything she has written. 
+This application will be in the form of a portfolio. This is how she described her work:
+I’m very talented and I write tons of different things. For instance, 
+last week I wrote an article about the latest economic 
+crisis for a newspaper. I don’t know much about economics,
+ but I read a bit and I was able to compose a nice little article. 
+On the other hand, a month ago another famous newspaper published 
+a serial I did. Well, that one was about the history of art
+ in the Netherlands. I already had some knowledge in the field because 5 years ago I wrote a book on Rembrandt – which 
+was published last year, by the way. It’s almost always the same when I work with newspapers; their assignments are quick and easy. 
+It’s another story with publishing houses, though. Verification, editing... there are so many steps and so many deadlines 
+that I need to remember!
+
+Based on the description, suggest a few general entities that could be used in an application for Joanne to track 
+everything she’s written. Think about the following question: what kind of things has she written and where has she published them?
+Solution:
+As we can see, Joanne writes two kinds of compositions. The first are shorter articles that are published in newspapers.
+ They are quick assignments and don’t require much information. The second type of composition is longer and more complicated 
+– writing books. They are published by publishing houses. It’s better to keep them as a separate entity. All in all,
+ we have two main categories of things Joanne writes: Article and Book. We also have two categories of companies 
+who publish them: Newspaper and Publishing House.
+
+Article, Book, Newspaper & PublishingHouse.
+
+======================
+Problem 3: Movie Database
+John is a zealous film student and wants to create a new website about movies. He described the idea this way:
+
+There will be information about various things in my database. First of all, there will be movies, different kinds of them. 
+In each movie, there are actors – I want to store information about them too. Not only professional data, like the movies 
+they played in, but also some funny things or some personal information. Then, there are directors. They are very important
+ in movies, so I want to write about them too. And movie studios, of course! Not many websites mention them, but they are 
+important to me as well. Finally, there will be reviews for all of the movies.
+
+Based on the above description, suggest some entities for John’s movie database.
+We can clearly identify 5 entities in the description: Movie, Actor, Director, Studio and Review.
+
