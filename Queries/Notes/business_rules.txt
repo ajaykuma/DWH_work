@@ -1,0 +1,61 @@
+Consider the following example from the aviation industry: the aircraft registration
+number is a standardized alphanumeric identifier for aircraft and is used world-wide.
+Each number has a prefix that indicates the country where the aircraft is registered. For
+example, the registration number “D-EBUT” originates from Germany (because of the
+prefix “D”). Numbers from Germany are actually “smart keys,”.
+In the case of the German aircraft with the registration “D-EBUT”, the second character indicates that the plane is
+a single-engine aircraft. In the US, the prefix “N” is common. Until December 31, 1948,
+there was also a second prefix (the second letter in the number) that was used to indicate
+the category of the aircraft
+
+Category Prefixes in the USA until December 1948
+Category
+C Commercial and private airline
+G Glider
+L Limited
+R Restricted (e.g., cropdusters and racing aircrafts)
+S State
+X Experimental
+
+For example, the aircraft with the registration number N-X-211 is registered in the
+experimental category.
+However, the FAA decided to stop using the second prefix and now issues numbers
+between 3 (N1A) and 6 characters (N99999) without any other meaning, except for the
+first prefix which indicates the origination country. In fact, the second letter is always a
+number between 1 and 9.
+Now, consider the effect of this change on your data warehouse. If the category has
+been extracted from the (now historic) N-Number, the second letter would be used to
+identify the aircraft category just after loading the data from the stage area into the
+normalized data warehouse, where the category would most probably be a column in the
+aircraft table. Once the numbers change, however, there would be only a number
+between 1 and 9 in the second position of the registration number, which has no
+meaning. In order to update the business rule, the easiest approach would be to
+introduce a new category (“Unknown category”) where those aircraft are mapped to if
+the second letter in the registration number is from 1 to 9. However, because there will be
+no new aircraft with a category other than the unknown, it is reasonable to remove the
+category completely (unless you focus on the analysis of historic aircraft). That makes
+even more sense if you consider that today’s aircraft are categorized by the operation
+code, air-worthiness class, and other categories at the same time, making the
+categorization above invalid.
+
+Therefore, this change in the business rule requires the replacement of the category by
+multiple new categories. In the normalized data warehouse, we would have to remove the
+old category column and add multiple category references to the aircraft. After changing
+the ETL jobs that load the data from the stage into the normalized data warehouse, we
+can change the information mart that is built on top of the data warehouse layer and
+modify the data mart ETL routines.
+
+In the Data Vault 2.0 architecture, the categorization of an aircraft would be loaded
+into a table called a satellite that contains descriptive data.
+
+When the logic in the source system changes – in this case, the format of the N-Number – the old satellite is closed (no new
+data is loaded into the current satellite). All new data is loaded into a new satellite with 
+an updated structure that meets the structure of the source data. In this process, there
+are no business rules implemented. All data is loaded. Because there are now two tables,
+one holding historic data and the other new data, it is easy to implement the business
+rule when loading the data from the Data Vault into the information mart. It is also easy
+to build one information mart for the analysis of historic, older aircraft and another
+information mart for the analysis of modern aircraft that have been built after 1948.
+
+
+

@@ -1,0 +1,1 @@
+select CONCAT(serNo,age) as newID,serNO,age,marital,balance,y from Bank_full

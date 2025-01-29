@@ -1,0 +1,332 @@
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 ~
+$ cd users
+bash: cd: users: No such file or directory
+
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 ~
+$ cd c:
+
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c
+$ cd users
+
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c/users
+$ cd ajay
+
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c/users/ajay
+$ cd dbt-core/
+
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c/users/ajay/dbt-core
+$ source scripts/activate
+(dbt-core)
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c/users/ajay/dbt-core
+
+https://docs.getdbt.com/docs/core/connect-data-platform/mssql-setup
+python -m pip install dbt-core dbt-sqlserver
+
+https://docs.getdbt.com/docs/core/connect-data-platform/bigquery-setup
+python -m pip install dbt-core dbt-bigquery
+
+--might be needed
+$ python -m pip install --upgrade pip
+
+Successfully built daff logbook minimal-snowplow-tracker
+Installing collected packages: text-unidecode, pytz, pytimeparse, parsedatetime, logbook, leather, daff, zipp, 
+urllib3, tzdata, typing-extensions, sqlparse, six, rpds-py, pyyaml, python-slugify, pyasn1, protobuf, 
+pkgutil-resolve-name, pathspec, packaging, ordered-set, numpy, networkx, msgpack, more-itertools, MarkupSafe, 
+idna, grpcio, google-crc32c, dbt-extractor, colorama, charset-normalizer, certifi, cachetools, Babel, attrs, rsa, 
+requests, referencing, python-dateutil, pydantic-core, pyasn1-modules, pyarrow, proto-plus, mashumaro, Jinja2, isodate, 
+importlib-resources, importlib-metadata, googleapis-common-protos, google-resumable-media, deepdiff, click, annotated-types, 
+pydantic, pandas, minimal-snowplow-tracker, jsonschema-specifications, grpcio-status, google-auth, agate, jsonschema, 
+grpc-google-iam-v1, google-api-core, db-dtypes, google-cloud-core, dbt-semantic-interfaces, dbt-common, google-cloud-storage, 
+google-cloud-dataproc, google-cloud-bigquery, dbt-adapters, dbt-core, dbt-bigquery
+
+Installing collected packages: pywin32, pyodbc, PyJWT, pycparser, portalocker, cffi, azure-core, cryptography, msal, 
+msal-extensions, azure-identity, dbt-fabric, dbt-sqlserver
+
+$ dbt --version
+Core:
+  - installed: 1.8.7
+  - latest:    1.8.7 - Up to date!
+
+Plugins:
+  - bigquery:  1.8.2 - Up to date!
+  - fabric:    1.8.7 - Up to date!
+  - sqlserver: 1.8.4 - Up to date!
+
+$ dbt init dbt_core_myproj
+<ctrl-c> for now
+
+Look into the path
+C:\Users\Ajay\dbt-core
+C:\Users\Ajay\dbt-core\dbt_core_myproj 
+--contains dbt_project.yml
+
+in C:\Users\Ajay\.dbt , create a profiles.yml file pointing to your project and google cloud
+--profiles.yml
+
+dbt_core_myproj: #this needs to match the profile in your dbt_project.yml
+  target: dev
+  outputs: 
+    dev:
+      type: bigquery
+      method: service-account
+      keyfile: C:\Users\Ajay\Downloads\gcbqry\xyx.json
+      project: my-project-7868-xyx
+      dataset: Staging
+      threads: 1
+      timeout_seconds: 300
+      location: US
+      priority: interactive
+
+#https://docs.appodeal.com/faq-and-troubleshooting/faq/generate-the-json-file-in-google-cloud
+
+--while here
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c/users/ajay/dbt-core
+cd dbt_core_myproj
+
+$dbt debug
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c/users/ajay/dbt-core/dbt_core_myproj
+$ dbt debug
+00:20  Running with dbt=1.8.7
+00:20  dbt version: 1.8.7
+00:20  python version: 3.8.2rc2
+00:20  python path: C:\Users\Ajay\dbt-core\Scripts\python.exe
+00:20  os info: Windows-10-10.0.19041-SP0
+00:21  Using profiles dir at C:\Users\Ajay\.dbt
+00:21  Using profiles.yml file at C:\Users\Ajay\.dbt\profiles.yml
+00:21  Using dbt_project.yml file at C:\users\ajay\dbt-core\dbt_core_myproj\dbt_project.yml
+00:21  adapter type: bigquery
+00:21  adapter version: 1.8.2
+00:22  Configuration:
+00:22    profiles.yml file [OK found and valid]
+00:22    dbt_project.yml file [OK found and valid]
+00:22  Required dependencies:
+00:22   - git [OK found]
+
+00:22  Connection:
+00:22    method: service-account
+00:22    database: -------------------
+00:22    execution_project: ----------------
+00:22    schema: Staging
+00:22    location: US
+00:22    priority: interactive
+00:22    maximum_bytes_billed: None
+00:22    impersonate_service_account: None
+00:22    job_retry_deadline_seconds: None
+00:22    job_retries: 1
+00:22    job_creation_timeout_seconds: None
+00:22    job_execution_timeout_seconds: 300
+00:22    timeout_seconds: 300
+00:22    client_id: None
+00:22    token_uri: None
+00:22    dataproc_region: None
+00:22    dataproc_cluster_name: None
+00:22    gcs_bucket: None
+00:22    dataproc_batch: None
+00:22  Registered adapter: bigquery=1.8.2
+00:23    Connection test: [OK connection ok]
+
+00:23  All checks passed!
+(dbt-core)
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c/users/ajay/dbt-core/dbt_core_myproj
+
+--look into C:\Users\Ajay\dbt-core\dbt_core_myproj\models\example 
+--for samples
+
+$dbt run
+--check in gcloud account in bquery is models were created ie table and view.
+
+#dbt models:
+Models are basic building blocks of dbt project.
+SQL definitions which are then materialized as tables or views.
+A model main cntain multiple transformations, it can be difficult to maintain and test.
+We should separate model into different models reference using ref keyword.
+
+--example below.
+
+--in cloud : create dataset under your project and create tables using files from local machine/cloud
+For example: i created 'Customers','Orders' by using file based on northwind OLTP source.
+--now create a new file for creating a table/view form existing dataset>table using dbt
+
+in C:\Users\Ajay\dbt-core\dbt_core_myproj\models\example > create a file 'customers.sql'
+--this contains
+
+with stg_customers as 
+(
+SELECT CustomerID, CompanyName,ContactName,ContactTitle,
+       Address,City,Region,PostalCode,Country,Phone
+       ,Fax
+ FROM datafiles.Customers
+
+)
+
+select * from stg_customers
+
+Based on profile , our model will be created in gquery with name same as filename.
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c/users/ajay/dbt-core/dbt_core_myproj/models
+$ dbt run
+00:44  Running with dbt=1.8.7
+00:46  Registered adapter: bigquery=1.8.2
+00:46  Found 3 models, 4 data tests, 479 macros
+00:46
+00:48  Concurrency: 1 threads (target='dev')
+00:48
+00:48  1 of 3 START sql view model Staging.customers .................................. [RUN]
+00:49  1 of 3 OK created sql view model Staging.customers ............................. [CREATE VIEW (0 processed) in 1.61s]
+00:49  2 of 3 START sql table model Staging.my_first_dbt_model ........................ [RUN]
+00:53  2 of 3 OK created sql table model Staging.my_first_dbt_model ................... [CREATE TABLE (2.0 rows, 0 processed) in 3.54s]
+00:53  3 of 3 START sql view model Staging.my_second_dbt_model ........................ [RUN]
+00:54  3 of 3 OK created sql view model Staging.my_second_dbt_model ................... [CREATE VIEW (0 processed) in 1.28s]
+00:54
+00:54  Finished running 2 view models, 1 table model in 0 hours 0 minutes and 7.66 seconds (7.66s).
+00:54
+00:54  Completed successfully
+00:54
+00:54  Done. PASS=3 WARN=0 ERROR=0 SKIP=0 TOTAL=3
+(dbt-core)
+
+--check in gquery..
+
+similarly adding more columns such as LoadDate,RecordSource,CustomerHashKey (in future also CustomerHashDiff)
+
+create a file 'customers.sql'
+--this contains
+
+with stg_customers as 
+(
+SELECT CustomerID, CompanyName,ContactName,ContactTitle,
+       Address,City,Region,PostalCode,Country,Phone
+       ,Fax,'Northwind_Sqldb' AS RecordSource,
+       current_date()  AS LoadDate,
+MD5(NULLIF(UPPER(TRIM(CAST(CustomerID AS string))), '')) AS CustomerHashKey
+ FROM datafiles.Customers
+
+)
+
+select * from stg_customers
+
+$ dbt run
+00:31  Running with dbt=1.8.7
+00:32  Registered adapter: bigquery=1.8.2
+00:33  Found 4 models, 4 data tests, 479 macros
+00:33
+00:35  Concurrency: 1 threads (target='dev')
+00:35
+00:35  1 of 4 START sql view model Staging.customers .................................. [RUN]
+00:36  1 of 4 OK created sql view model Staging.customers ............................. [CREATE VIEW (0 processed) in 1.45s]
+00:36  2 of 4 START sql table model Staging.my_first_dbt_model ........................ [RUN]
+00:39  2 of 4 OK created sql table model Staging.my_first_dbt_model ................... [CREATE TABLE (2.0 rows, 0 processed) in 3.40s]
+00:39  3 of 4 START sql view model Staging.stg_customers .............................. [RUN]
+00:41  3 of 4 OK created sql view model Staging.stg_customers ......................... [CREATE VIEW (0 processed) in 1.60s]
+00:41  4 of 4 START sql view model Staging.my_second_dbt_model ........................ [RUN]
+00:43  4 of 4 OK created sql view model Staging.my_second_dbt_model ................... [CREATE VIEW (0 processed) in 1.49s]
+00:43
+00:43  Finished running 3 view models, 1 table model in 0 hours 0 minutes and 9.34 seconds (9.34s).
+00:43
+00:43  Completed successfully
+00:43
+00:43  Done. PASS=4 WARN=0 ERROR=0 SKIP=0 TOTAL=4
+(dbt-core)
+Ajay@DESKTOP-Q6Q9KGQ MINGW64 /c/users/ajay/dbt-core/dbt_core_myproj/models
+
+--check in gquery
+
+-------
+#using reference
+--use the ref function to select from other model
+
+select 
+  o.OrderID,c.CustomerID,c.ContactName,p.ProductID,p.ProductName,o.OrderDate from datafiles.Orders o 
+JOIN {{ref("stg_customers"}} c on o.CustomerID = c.CustomerID
+JOIN datafiles.Products p on o.ProductID = p.ProductID
+
+--------
+
+Note**
+dbt_project.yml has 
+models:
+  dbt_core_myproj:
+    # Config indicated by + and applies to all files under models/example/
+    example:
+      +materialized: view
+
+which shows how models will be materialized (table/view)
+
+
+--create a folder under 'sample' > views >
+--create a file v_customers.sql
+
+
+--if folder contained models materialized as tables, we can add below
+#{{config(materialized='view')}}
+
+SELECT CustomerID, CompanyName,ContactName,ContactTitle,
+       Address,City,Region,PostalCode,Country,Phone
+       ,Fax
+ FROM datafiles.Customers
+
+$ dbt run -s v_customers.sql
+
+--check in gquery
+
+=============
+
+--creating a dbt macro
+{%macro macro_name(argument 1, argument 2,...)
+	----SQL logic for the macro
+{% endmacro %}
+
+--using dbt macro
+{{macro_name(argument1, argument2,...}}
+
+for example:
+test_mac.sql in macros folder
+
+{%macro test_mac(CustomerID) %}
+
+ (select struct (
+  {{CustomerID}} as original_id,
+  MD5(NULLIF(UPPER(TRIM(CAST(CustomerID AS string))), '')) AS CustomerHashKey) as mydata)
+{% endmacro %}
+
+in models/stg_customers2.sql
+
+with stg_customers2 as 
+(
+SELECT CustomerID, CompanyName,ContactName,ContactTitle,
+       Address,City,Region,PostalCode,Country,Phone
+       ,Fax,'Northwind_Sqldb' AS RecordSource,
+       current_date()  AS LoadDate,
+    {{test_mac('CustomerID')}} AS CustomerHashKey
+ FROM datafiles.Customers
+
+)
+
+select * from stg_customers2
+
+$dbt run -s stg_customers2.sql
+
+---------------
+for testing
+in tests folder , create a file
+
+tests_exm.sql
+
+select count(*) as numofcust
+from {{ref('stg_customers')}}
+where Country = 'Germany'
+
+$dbt test 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

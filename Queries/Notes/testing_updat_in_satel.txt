@@ -1,0 +1,19 @@
+Test-satellite
+
+--make a change in source customers table, say in address field
+--load data into staging table for this source table
+--update the hashes if not updated as part of loading into stage
+--assuming hub for customers and its satellite already contain data..
+
+--load the data in hub again 
+  followed by loading data (2 step process) in satellite..
+
+check by getting CustomerHashKey from staging table..
+  
+SELECT *
+  FROM [DataVaultRaw].[raw].[SatCustomers] where [CustomerHashKey] = 0x584D0B683C457577492DB6E42FD1ABCE;
+
+what do you see?
+
+
+

@@ -9,5 +9,8 @@ Primary Key (CategoryID)
 )
 
 Create unique index hub_category_i1
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5d5f6b9ed3614d8f317b28b916049f465dff0e40
 on Hub_Category (CategoryName)
